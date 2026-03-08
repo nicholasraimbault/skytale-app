@@ -8,24 +8,40 @@ import Login from './pages/Login.jsx';
 import Overview from './pages/Overview.jsx';
 import Keys from './pages/Keys.jsx';
 import Account from './pages/Account.jsx';
-import { useState, useCallback } from 'react';
+import Welcome from './pages/Welcome.jsx';
+import { getAccount } from './api.js';
+import { useState, useEffect, useCallback } from 'react';
 
 export default function App() {
   const [authed, setAuthed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogin = useCallback(() => setAuthed(true), []);
+  useEffect(() => {
+    getAccount()
+      .then(() => setAuthed(true))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   const handleLogout = useCallback(() => setAuthed(false), []);
+
+  if (loading) return null;
 
   return (
     <BrowserRouter>
       {authed && <Nav onLogout={handleLogout} />}
       <Routes>
         <Route path="/login" element={
-          authed ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />
+          authed ? <Navigate to="/" replace /> : <Login />
         } />
         <Route path="/" element={
           <ProtectedRoute authed={authed}>
             <Overview />
+          </ProtectedRoute>
+        } />
+        <Route path="/welcome" element={
+          <ProtectedRoute authed={authed}>
+            <Welcome />
           </ProtectedRoute>
         } />
         <Route path="/keys" element={

@@ -1,66 +1,25 @@
 // Copyright 2026 Skytale. Licensed under the Business Source License 1.1.
 // See LICENSE for details.
 
-import { useState } from 'react';
-import { login } from '../api.js';
-import '../styles/pages.css';
+import './Login.css';
 
-export default function Login({ onLogin }) {
-  const [apiKey, setApiKey] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!apiKey.trim()) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await login(apiKey.trim());
-      onLogin();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function Login() {
   return (
     <div className="login-page">
-      <div className="card login-card">
-        <div className="login-brand">
-          skytale<span>.</span>
+      <div className="login-card">
+        <div className="login-logo">
+          <h1>skytale<span>.</span></h1>
         </div>
         <p className="login-subtitle">
-          Sign in with your API key to access the dashboard.
+          Sign in to access the dashboard.
         </p>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="api-key">API Key</label>
-            <input
-              id="api-key"
-              type="password"
-              className="input"
-              placeholder="sk_live_..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              autoFocus
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={loading || !apiKey.trim()}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-
-          {error && <p className="error-msg">{error}</p>}
-        </form>
+        <a href="https://api.skytale.sh/auth/github" className="btn btn-github">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          Sign in with GitHub
+        </a>
       </div>
     </div>
   );

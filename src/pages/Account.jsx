@@ -50,6 +50,22 @@ export default function Account() {
 
       <div className="account-grid">
         <div className="card">
+          {account?.github_login && (
+            <div className="account-field account-github-row">
+              {account?.avatar_url && (
+                <img
+                  src={account.avatar_url}
+                  alt=""
+                  className="account-avatar"
+                />
+              )}
+              <div>
+                <div className="account-field-label">GitHub</div>
+                <div className="account-field-value">@{account.github_login}</div>
+              </div>
+            </div>
+          )}
+
           <div className="account-field">
             <div className="account-field-label">Email</div>
             <div className="account-field-value">{account?.email || '--'}</div>

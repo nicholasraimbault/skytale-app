@@ -29,13 +29,6 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export async function login(apiKey) {
-  return request('/tokens?cookie=true', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}` },
-  });
-}
-
 export async function getUsage() {
   return request('/usage');
 }
