@@ -75,6 +75,10 @@ export async function createInvite(channel, maxUses = 1, ttlSeconds = 3600) {
   });
 }
 
+export async function createChannel(name) {
+  return request('/channels', { method: 'POST', body: JSON.stringify({ name }) });
+}
+
 export async function getAgents() {
   return request('/agents');
 }
@@ -152,13 +156,6 @@ export async function getFederationDirectory({ capability, org, limit = 50, offs
   return request(`/federation/directory?${params}`);
 }
 
-export async function verifyOrg(data) {
-  return request('/federation/verify-org', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
 // --- Agents (additional) ---
 
 export async function updateAgent(did, data) {
@@ -166,13 +163,6 @@ export async function updateAgent(did, data) {
     method: 'PUT',
     body: JSON.stringify(data),
   });
-}
-
-export async function searchAgents({ capability, did, limit = 50, offset = 0 } = {}) {
-  const params = new URLSearchParams({ limit, offset });
-  if (capability) params.set('capability', capability);
-  if (did) params.set('did', did);
-  return request(`/agents?${params}`);
 }
 
 // --- Channels (additional) ---

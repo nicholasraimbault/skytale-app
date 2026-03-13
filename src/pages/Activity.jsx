@@ -22,9 +22,12 @@ const CATEGORY_CONFIG = {
 };
 
 function getCategory(event) {
-  if (!event?.category) return 'agents';
-  const cat = event.category.toLowerCase();
-  if (cat in CATEGORY_CONFIG) return cat;
+  const rt = (event?.resource_type || '').toLowerCase();
+  if (rt === 'channel') return 'channels';
+  if (rt === 'agent') return 'agents';
+  if (rt === 'billing') return 'billing';
+  const action = (event?.action || '').toLowerCase();
+  if (action.startsWith('revocation.') || action.startsWith('auth.')) return 'security';
   return 'agents';
 }
 
@@ -50,7 +53,7 @@ export default function Activity() {
       const params = { limit: LIMIT, offset: newOffset };
       if (filterValue !== 'all') params.filter = filterValue;
       const data = await getActivityLog(params);
-      const items = data?.events || [];
+      const items = data?.entries || [];
       if (isInitial) {
         setEvents(items);
       } else {

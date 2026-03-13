@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { getChannels, createInvite } from '../api.js';
+import { getChannels, createChannel, createInvite } from '../api.js';
 import { formatDate, timeAgo, healthDotClass } from '../utils.js';
 import '../styles/pages.css';
 
@@ -14,13 +14,46 @@ export default function Channels() {
   const [inviteToken, setInviteToken] = useState(null);
   const [invitingChannel, setInvitingChannel] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState('');
+
+  async function fetchChannels() {
+    try {
+      const data = await getChannels();
+      setChannels(data?.channels || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    getChannels()
-      .then((data) => setChannels(data?.channels || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    fetchChannels();
   }, []);
+
+  async function handleCreate(e) {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setCreating(true);
+    setError(null);
+    try {
+      await createChannel(newName.trim());
+      setNewName('');
+      setShowCreate(false);
+      await fetchChannels();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const filteredChannels = channels.filter((ch) =>
+    ch.name?.toLowerCase().includes(search.toLowerCase()),
+  );
 
   async function handleInvite(channelName) {
     setInvitingChannel(channelName);
@@ -50,6 +83,57 @@ export default function Channels() {
           <h1>Channels</h1>
           <p>Your encrypted channels and shared context.</p>
         </div>
+        {!showCreate && (
+          <button className="btn-primary" onClick={() => setShowCreate(true)}>
+            Create Channel
+          </button>
+        )}
+      </div>
+
+      {showCreate && (
+        <form className="agent-register-form card" onSubmit={handleCreate}>
+          <div className="agent-form-row">
+            <label htmlFor="channel-name" className="visually-hidden">
+              Channel name
+            </label>
+            <input
+              id="channel-name"
+              className="input"
+              placeholder="org/namespace/service"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="agent-form-actions">
+            <button type="submit" className="btn-primary" disabled={creating}>
+              {creating ? 'Creating...' : 'Create'}
+            </button>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => {
+                setShowCreate(false);
+                setNewName('');
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="filter-bar">
+        <label htmlFor="filter-channel" className="visually-hidden">
+          Search channels
+        </label>
+        <input
+          id="filter-channel"
+          className="input"
+          placeholder="Search channels..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {inviteToken && (
@@ -72,17 +156,26 @@ export default function Channels() {
         </div>
       )}
 
-      {error && <p className="error-msg">{error}</p>}
+      {error && (
+        <div className="error-msg">
+          <p>{error}</p>
+          <button className="btn-ghost" onClick={fetchChannels}>
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="key-list">
-        {channels.length === 0 ? (
+        {filteredChannels.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>
             <p style={{ color: 'var(--text-muted)' }}>
-              No channels yet. Create one from the SDK — see the quickstart guide.
+              {channels.length === 0
+                ? 'No channels yet. Create your first encrypted channel.'
+                : 'No channels match your search.'}
             </p>
           </div>
         ) : (
-          channels.map((ch) => (
+          filteredChannels.map((ch) => (
             <div key={ch.id} className="card key-item">
               <div className="key-info">
                 <span className="key-name">
