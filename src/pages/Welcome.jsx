@@ -1,15 +1,14 @@
 // Copyright 2026 Skytale. Licensed under the Business Source License 1.1.
 // See LICENSE for details.
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getAccount, getKeys, createKey } from '../api.js';
 import './Welcome.css';
 
-function snippets(apiKey) {
+function snippet(apiKey) {
   const key = apiKey || 'sk_live_...';
-  return {
-    python: `pip install skytale-sdk
+  return `pip install skytale-sdk
 
 from skytale_sdk import SkytaleChannelManager
 from skytale_sdk.context import SharedContext
@@ -17,17 +16,7 @@ from skytale_sdk.context import SharedContext
 mgr = SkytaleChannelManager(identity=b"my-agent", api_key="${key}")
 mgr.create("myorg/research/results")
 ctx = SharedContext(mgr, "myorg/research/results")
-ctx.set("status", {"phase": "ready"})`,
-    typescript: `npm install @skytalesh/sdk
-
-import { SkytaleChannelManager } from "@skytalesh/sdk";
-import { SharedContext } from "@skytalesh/sdk/context";
-
-const mgr = new SkytaleChannelManager({ identity: "my-agent", apiKey: "${key}" });
-await mgr.create("myorg/research/results");
-const ctx = new SharedContext(mgr, "myorg/research/results");
-ctx.set("status", { phase: "ready" });`,
-  };
+ctx.set("status", {"phase": "ready"})`;
 }
 
 export default function Welcome() {
@@ -36,7 +25,6 @@ export default function Welcome() {
   const [hasExistingKeys, setHasExistingKeys] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [tab, setTab] = useState('python');
   const navigate = useNavigate();
   const keyCreationAttempted = useRef(false);
 
@@ -79,7 +67,7 @@ export default function Welcome() {
   }, []);
 
   const displayName = account?.github_login || account?.email || 'there';
-  const code = snippets(apiKey);
+  const code = snippet(apiKey);
 
   async function handleCopy() {
     if (!apiKey) return;
@@ -151,22 +139,8 @@ export default function Welcome() {
 
         <div className="welcome-quickstart card">
           <h2>Quickstart</h2>
-          <div className="welcome-tabs">
-            <button
-              className={`welcome-tab ${tab === 'python' ? 'active' : ''}`}
-              onClick={() => setTab('python')}
-            >
-              Python
-            </button>
-            <button
-              className={`welcome-tab ${tab === 'typescript' ? 'active' : ''}`}
-              onClick={() => setTab('typescript')}
-            >
-              TypeScript
-            </button>
-          </div>
           <pre className="welcome-code">
-            <code>{tab === 'python' ? code.python : code.typescript}</code>
+            <code>{code}</code>
           </pre>
         </div>
 
