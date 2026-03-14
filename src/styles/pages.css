@@ -26,8 +26,15 @@
   color: var(--text-dim);
 }
 
-.usage-chart-card {
+.overview-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   margin-top: 1.5rem;
+}
+
+.usage-chart-card {
+  margin-top: 0;
 }
 
 .usage-chart-title {
@@ -37,7 +44,7 @@
 }
 
 .quota-section {
-  margin-top: 1.5rem;
+  margin-top: 0;
 }
 
 .quota-label {
@@ -789,6 +796,10 @@
 /* ========== Responsive ========== */
 
 @media (min-width: 1440px) {
+  .key-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
   .channel-health-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -797,6 +808,21 @@
   }
   .account-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  .security-events-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .trust-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .overview-split {
+    flex-direction: row;
+  }
+  .overview-split > * {
+    flex: 1;
+    min-width: 0;
   }
 }
 
