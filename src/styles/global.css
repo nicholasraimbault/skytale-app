@@ -252,7 +252,8 @@ input {
 /* Layout */
 
 .page {
-  padding: 2.5rem 2.5rem 3rem calc(48px + 2.5rem);
+  max-width: 1800px;
+  padding: 2.5rem 3rem 3rem calc(48px + 3rem);
 }
 
 .page-title {
@@ -273,6 +274,12 @@ input {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+}
+
+@media (min-width: 1440px) {
+  .grid-3 {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 1024px) {
