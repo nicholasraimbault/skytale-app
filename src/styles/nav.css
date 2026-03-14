@@ -119,7 +119,7 @@ body.sidebar-collapsed .nav-sidebar-panel {
 .nav-sidebar-panel-glass {
   position: absolute;
   inset: 0;
-  background: rgba(10, 10, 11, 0.72);
+  background: rgba(22, 22, 25, 0.78);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   box-shadow: 1px 0 0 var(--border);
