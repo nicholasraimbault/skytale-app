@@ -122,7 +122,8 @@ body.sidebar-collapsed .nav-sidebar-panel {
   background: rgba(22, 22, 25, 0.78);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  box-shadow: 1px 0 0 var(--border);
+  border: 1px solid var(--border);
+  border-left: none;
   border-radius: 0 38px 38px 0;
 }
 
