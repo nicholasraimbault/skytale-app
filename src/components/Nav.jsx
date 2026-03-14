@@ -2,7 +2,7 @@
 // See LICENSE for details.
 
 import { NavLink, useNavigate } from 'react-router';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import StatusBar from './StatusBar.jsx';
 import NotificationCenter from './NotificationCenter.jsx';
 import Changelog from './Changelog.jsx';
@@ -44,6 +44,7 @@ export default function Nav({ onLogout }) {
   );
   const navigate = useNavigate();
 
+  // --- Mobile menu refs ---
   const navRef = useRef(null);
   const glassRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -56,6 +57,17 @@ export default function Nav({ onLogout }) {
   const easeFnRef = useRef(easeOut);
   const dropHRef = useRef(0);
 
+  // --- Sidebar panel refs ---
+  const sidebarPanelRef = useRef(null);
+  const sidebarContentRef = useRef(null);
+
+  const sbAnimsRef = useRef([]);
+  const sbScaleRef = useRef(collapsed ? MIN_SCALE : 1);
+  const sbStartRef = useRef(collapsed ? MIN_SCALE : 1);
+  const sbTargetRef = useRef(collapsed ? MIN_SCALE : 1);
+  const sbEaseFnRef = useRef(easeOut);
+
+  // --- Mobile menu toggle (scaleY — unchanged) ---
   const toggle = useCallback(() => {
     const glass = glassRef.current;
     const dropdown = dropdownRef.current;
@@ -66,7 +78,6 @@ export default function Nav({ onLogout }) {
 
     const opening = !isOpen;
 
-    // Compute current scale if mid-animation
     if (animsRef.current.length && animsRef.current[0].playState === 'running') {
       const dur = targetRef.current > startRef.current ? OPEN_DURATION : CLOSE_DURATION;
       const t = Math.min(1, Math.max(0, animsRef.current[0].currentTime / dur));
@@ -74,7 +85,6 @@ export default function Nav({ onLogout }) {
       scaleRef.current = Math.max(MIN_SCALE, Math.min(1, s));
     }
 
-    // Capture glass state before cancelling
     const cs = getComputedStyle(glass);
     const glassFrom = {
       height: cs.height,
@@ -126,7 +136,58 @@ export default function Nav({ onLogout }) {
     setIsOpen(opening);
   }, [isOpen]);
 
-  // Close menu on navigation
+  // --- Sidebar panel toggle (scaleX — mirrors mobile menu) ---
+  function toggleSidebar() {
+    const panel = sidebarPanelRef.current;
+    const content = sidebarContentRef.current;
+    if (!panel || !content) return;
+
+    const expanding = collapsed;
+
+    // Compute current scale if mid-animation
+    if (sbAnimsRef.current.length && sbAnimsRef.current[0].playState === 'running') {
+      const dur = sbTargetRef.current > sbStartRef.current ? OPEN_DURATION : CLOSE_DURATION;
+      const t = Math.min(1, Math.max(0, sbAnimsRef.current[0].currentTime / dur));
+      let s =
+        sbStartRef.current + (sbTargetRef.current - sbStartRef.current) * sbEaseFnRef.current(t);
+      sbScaleRef.current = Math.max(MIN_SCALE, Math.min(1, s));
+    }
+
+    sbAnimsRef.current.forEach((a) => a.cancel());
+
+    sbStartRef.current = sbScaleRef.current;
+    sbTargetRef.current = expanding ? 1 : MIN_SCALE;
+    sbEaseFnRef.current = expanding ? easeOut : snapFlat;
+
+    const pKf = [];
+    const cKf = [];
+
+    for (let i = 0; i <= STEPS; i++) {
+      const p = i / STEPS;
+      let s =
+        sbStartRef.current + (sbTargetRef.current - sbStartRef.current) * sbEaseFnRef.current(p);
+      s = Math.max(MIN_SCALE, Math.min(1, s));
+      pKf.push({ transform: `scaleX(${s})`, offset: p });
+      cKf.push({ transform: `scaleX(${1 / s})`, offset: p });
+    }
+
+    const dur = expanding ? OPEN_DURATION : CLOSE_DURATION;
+
+    sbAnimsRef.current = [
+      panel.animate(pKf, { duration: dur, easing: 'linear', fill: 'both' }),
+      content.animate(cKf, { duration: dur, easing: 'linear', fill: 'both' }),
+    ];
+
+    sbAnimsRef.current[0].onfinish = () => {
+      sbScaleRef.current = sbTargetRef.current;
+    };
+
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('skytale_sidebar_collapsed', String(next));
+  }
+
+  // Close mobile menu on navigation
   const closeMenu = useCallback(() => {
     if (isOpen) toggle();
   }, [isOpen, toggle]);
@@ -137,164 +198,196 @@ export default function Nav({ onLogout }) {
     navigate('/login');
   }
 
-  // Sync sidebar collapsed state to body class
-  useEffect(() => {
+  // Sync sidebar collapsed state to body class (before paint to avoid flash)
+  useLayoutEffect(() => {
     document.body.classList.toggle('sidebar-collapsed', collapsed);
   }, [collapsed]);
 
-  function toggleSidebar() {
-    const next = !collapsed;
-    setCollapsed(next);
-    localStorage.setItem('skytale_sidebar_collapsed', String(next));
-  }
-
   // Cleanup animations on unmount
   useEffect(() => {
-    return () => animsRef.current.forEach((a) => a.cancel());
+    return () => {
+      animsRef.current.forEach((a) => a.cancel());
+      sbAnimsRef.current.forEach((a) => a.cancel());
+    };
   }, []);
 
   return (
     <>
-      {/* Expand button (visible when sidebar collapsed) */}
-      <button className="nav-expand-btn" onClick={toggleSidebar} aria-label="Expand sidebar">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M13 17l5-5-5-5" />
-          <path d="M6 17l5-5-5-5" />
-        </svg>
-      </button>
-
       {/* Desktop sidebar */}
-      <aside className="nav-sidebar">
-        <div className="nav-sidebar-header">
-          <div className="nav-sidebar-brand">
-            <strong>sky</strong>tale
-            <strong>
-              <span>.</span>
-            </strong>
-          </div>
-          <div className="nav-sidebar-actions">
-            <Changelog />
-            <NotificationCenter />
-            <button
-              className="nav-collapse-btn"
-              onClick={toggleSidebar}
-              aria-label="Collapse sidebar"
+      <aside className="nav-sidebar" aria-label="Main navigation">
+        {/* Rail: always visible */}
+        <div className="nav-sidebar-rail">
+          <div className="nav-sidebar-rail-brand">.</div>
+          <button
+            className="nav-sidebar-expand"
+            onClick={toggleSidebar}
+            aria-label="Expand sidebar"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M11 17l-5-5 5-5" />
-                <path d="M18 17l-5-5 5-5" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div className="nav-section">
-          <div className="nav-section-label">Trust</div>
-          <NavLink to="/" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Overview
-          </NavLink>
-          <NavLink
-            to="/security"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Security
-          </NavLink>
-          <NavLink
-            to="/compliance"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Compliance
-          </NavLink>
-        </div>
-
-        <div className="nav-section">
-          <div className="nav-section-label">Manage</div>
-          <NavLink
-            to="/channels"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Channels
-          </NavLink>
-          <NavLink
-            to="/agents"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Agents
-          </NavLink>
-          <NavLink
-            to="/federation"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Federation
-          </NavLink>
-        </div>
-
-        <div className="nav-section">
-          <div className="nav-section-label">Develop</div>
-          <NavLink to="/keys" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            API Keys
-          </NavLink>
-          <NavLink
-            to="/playground"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Playground
-          </NavLink>
-        </div>
-
-        <div className="nav-section">
-          <div className="nav-section-label">Account</div>
-          <NavLink
-            to="/activity"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Activity
-          </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Settings
-          </NavLink>
-          <NavLink to="/team" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Team
-          </NavLink>
-          <NavLink
-            to="/pricing"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Pricing
-          </NavLink>
-          <NavLink
-            to="/account"
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-          >
-            Account
-          </NavLink>
-          <button className="nav-sidebar-logout" onClick={handleLogout}>
-            Log out
+              <path d="M13 17l5-5-5-5" />
+              <path d="M6 17l5-5-5-5" />
+            </svg>
           </button>
         </div>
 
-        <StatusBar />
+        {/* Panel: expandable overlay with glass blur + rounded corners */}
+        <div
+          className="nav-sidebar-panel"
+          ref={sidebarPanelRef}
+          style={{ transform: collapsed ? `scaleX(${MIN_SCALE})` : 'scaleX(1)' }}
+        >
+          <div className="nav-sidebar-panel-glass"></div>
+          <div
+            className="nav-sidebar-panel-content"
+            ref={sidebarContentRef}
+            style={{
+              transform: collapsed ? `scaleX(${1 / MIN_SCALE})` : 'scaleX(1)',
+            }}
+          >
+            <div className="nav-sidebar-panel-nav">
+              <div className="nav-sidebar-header">
+                <div className="nav-sidebar-brand">
+                  <strong>sky</strong>tale
+                  <strong>
+                    <span>.</span>
+                  </strong>
+                </div>
+                <div className="nav-sidebar-actions">
+                  <Changelog />
+                  <NotificationCenter />
+                  <button
+                    className="nav-collapse-btn"
+                    onClick={toggleSidebar}
+                    aria-label="Collapse sidebar"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M11 17l-5-5 5-5" />
+                      <path d="M18 17l-5-5 5-5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="nav-section">
+                <div className="nav-section-label">Trust</div>
+                <NavLink
+                  to="/"
+                  end
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Overview
+                </NavLink>
+                <NavLink
+                  to="/security"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Security
+                </NavLink>
+                <NavLink
+                  to="/compliance"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Compliance
+                </NavLink>
+              </div>
+
+              <div className="nav-section">
+                <div className="nav-section-label">Manage</div>
+                <NavLink
+                  to="/channels"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Channels
+                </NavLink>
+                <NavLink
+                  to="/agents"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Agents
+                </NavLink>
+                <NavLink
+                  to="/federation"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Federation
+                </NavLink>
+              </div>
+
+              <div className="nav-section">
+                <div className="nav-section-label">Develop</div>
+                <NavLink
+                  to="/keys"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  API Keys
+                </NavLink>
+                <NavLink
+                  to="/playground"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Playground
+                </NavLink>
+              </div>
+
+              <div className="nav-section">
+                <div className="nav-section-label">Account</div>
+                <NavLink
+                  to="/activity"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Activity
+                </NavLink>
+                <NavLink
+                  to="/settings"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Settings
+                </NavLink>
+                <NavLink
+                  to="/team"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Team
+                </NavLink>
+                <NavLink
+                  to="/pricing"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Pricing
+                </NavLink>
+                <NavLink
+                  to="/account"
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  Account
+                </NavLink>
+                <button className="nav-sidebar-logout" onClick={handleLogout}>
+                  Log out
+                </button>
+              </div>
+
+              <StatusBar />
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Mobile top nav (hamburger + dropdown — untouched animation system) */}

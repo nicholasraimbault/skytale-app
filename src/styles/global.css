@@ -260,7 +260,7 @@ input {
 }
 
 body.sidebar-collapsed .page {
-  margin-left: 0;
+  margin-left: 48px;
 }
 
 .page-title {
