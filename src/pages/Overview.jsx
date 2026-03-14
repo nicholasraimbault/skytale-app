@@ -510,6 +510,7 @@ export default function Overview() {
         </div>
       </div>
 
+      <div className="overview-split">
       {chart.length > 0 && (
         <div className="card usage-chart-card">
           <h2 className="usage-chart-title">Daily messages (last 30 days)</h2>
@@ -582,6 +583,7 @@ export default function Overview() {
             <Link to="/account">Consider upgrading</Link>
           </div>
         )}
+      </div>
       </div>
 
       {/* Channel Health Summary */}

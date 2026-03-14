@@ -340,3 +340,14 @@
     align-items: flex-start;
   }
 }
+
+@media (min-width: 1440px) {
+  .revocation-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .webhook-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
