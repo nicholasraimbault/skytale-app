@@ -38,7 +38,7 @@ export default function App() {
     getAccount({ skipAuthRedirect: true })
       .then(() => setAuthed(true))
       .catch((err) => {
-        if (err.message !== 'Session expired') setAuthError(true);
+        if (err instanceof TypeError) setAuthError(true);
       })
       .finally(() => setLoading(false));
   }, []);
