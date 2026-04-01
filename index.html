@@ -1,27 +1,1479 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content="Skytale" />
+    <meta name="theme-color" content="#0A0A0B" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>End-to-end encryption for AI agents — Skytale</title>
+    <meta name="description" content="A2A, MCP, ACP — every agent protocol sends plaintext. Skytale encrypts all of them. MLS (RFC 9420), zero-knowledge relay, open source." />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="End-to-end encryption for AI agents — Skytale" />
+    <meta property="og:description" content="A2A, MCP, ACP — every agent protocol sends plaintext. Skytale encrypts all of them. MLS (RFC 9420), zero-knowledge relay, open source." />
+    <meta property="og:site_name" content="Skytale" />
+    <meta property="og:url" content="https://skytale.sh" />
+    <meta property="og:image" content="https://skytale.sh/og.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="End-to-end encryption for AI agents — Skytale" />
+    <meta name="twitter:description" content="A2A, MCP, ACP — every agent protocol sends plaintext. Skytale encrypts all of them. MLS (RFC 9420), zero-knowledge relay, open source." />
+    <meta name="twitter:image" content="https://skytale.sh/og.svg" />
+
+    <link rel="canonical" href="https://skytale.sh" />
+    <link rel="preload" href="/fonts/epilogue-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jetbrains-mono-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skytale Dashboard</title>
-    <link
-      rel="preload"
-      href="/fonts/epilogue-latin-var.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/jetbrains-mono-latin-400.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+
+    <style>
+      /* ── Self-hosted fonts ── */
+
+      @font-face {
+        font-family: 'Epilogue';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('/fonts/epilogue-latin-var.woff2') format('woff2');
+      }
+
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/jetbrains-mono-latin-400.woff2') format('woff2');
+      }
+
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('/fonts/jetbrains-mono-latin-500.woff2') format('woff2');
+      }
+
+      @font-face {
+        font-family: 'JetBrains Mono Fallback';
+        src: local('Courier New');
+        ascent-override: 76.00%;
+        descent-override: 20.00%;
+        line-gap-override: 0.00%;
+        size-adjust: 110.00%;
+      }
+
+      /* ── Reset ── */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ── Color tokens ── */
+      :root {
+        --bg: #0A0A0B;
+        --bg-surface: #141416;
+        --bg-elevated: #1A1A1D;
+        --border: #2A2A2F;
+        --text: #EDEDEF;
+        --text-muted: #A0A0A8;
+        --text-dim: #8A8A94;
+        --text-bright: #F8F8FA;
+        --accent: #6b6fff;
+        --accent-hover: #8588ff;
+        --accent-text: #fff;
+        --success: #7dd3a0;
+        --warning: #c084fc;
+        --code-comment: #6b7280;
+        --font-display: 'JetBrains Mono', 'JetBrains Mono Fallback', 'SF Mono', 'Fira Code', monospace;
+        --font-sans: 'Epilogue', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', 'SF Mono', 'Fira Code', monospace;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        color-scheme: dark;
+        overflow-x: hidden;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+
+      body {
+        font-family: var(--font-mono);
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      a, button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      a {
+        color: var(--text-muted);
+        text-decoration: underline;
+      }
+
+      a:hover {
+        color: var(--text);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: 2px;
+        border-radius: 0;
+      }
+
+      code {
+        font-family: var(--font-mono);
+      }
+
+      /* ── TUI frame ── */
+      .tui {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        grid-template-rows: 32px 1fr auto 28px;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: #b0b0b8;
+        background: #0a0a0b;
+        border: 1px solid #2a2a2f;
+      }
+
+      /* ── Top bar ── */
+      .bar {
+        display: flex;
+        align-items: center;
+        padding: 0 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        gap: 1rem;
+      }
+
+      .top-bar {
+        background: #ededef;
+        color: #0a0a0b;
+        font-size: 0.72rem;
+        justify-content: space-between;
+      }
+
+      .top-bar strong { font-weight: 800; }
+      .top-bar .d { color: #7a7a84; }
+
+      .hero-typed {
+        flex: 1;
+        text-align: center;
+        font-weight: 400;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ── Main: sidebar + output ── */
+      .main {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        min-height: 0;
+        border-top: 1px solid #2a2a2f;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        border-right: 1px solid #2a2a2f;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .panel-title {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #7a7a84;
+        padding: 0.4rem 0.75rem;
+        border-bottom: 1px solid #2a2a2f;
+        background: #0e0e10;
+      }
+
+      .si {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: #7a7a84;
+        background: none;
+        border: none;
+        border-bottom: 1px solid #141416;
+        padding: 0.45rem 0.75rem;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+      }
+
+      .si:hover { color: #b0b0b8; background: #141416; }
+      .si.active { color: #ededef; background: #1a1a1d; }
+
+      .si-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.2em;
+        height: 1.2em;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #7a7a84;
+        border: 1px solid #3a3a40;
+        flex-shrink: 0;
+      }
+
+      .si-divider {
+        border-top: 1px solid #2a2a2f;
+        margin: 0.25rem 0;
+      }
+
+      .si.active .si-key {
+        color: #7dd3a0;
+        border-color: #7dd3a0;
+      }
+
+      /* ── Output ── */
+      .output {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .output .panel-title { flex-shrink: 0; }
+
+      .output-scroll {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: auto;
+        padding: 0.75rem 0.25rem;
+        min-height: 0;
+      }
+
+      .p {
+        display: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.8125rem;
+        line-height: 1.7;
+        color: #b0b0b8;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .p.active { display: block; }
+      .p strong { color: #ededef; font-weight: 700; }
+
+      .p a {
+        color: #a0a0aa;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .p a:hover { color: #ededef; }
+
+      /* ── Prompt ── */
+      .prompt-bar {
+        display: flex;
+        align-items: center;
+        border-top: 1px solid #2a2a2f;
+        padding: 0 0.75rem;
+        height: 36px;
+        background: #0e0e10;
+        gap: 0;
+      }
+
+      .prompt-prefix {
+        color: #ededef;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding-right: 0.6ch;
+      }
+
+      .prompt-input {
+        flex: 1;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: #ededef;
+        background: none;
+        border: none;
+        outline: none;
+        caret-color: #7dd3a0;
+        min-width: 0;
+      }
+
+      .prompt-input::placeholder { color: #3a3a40; }
+
+      .prompt-hint {
+        font-size: 0.68rem;
+        margin-left: 0.5rem;
+        white-space: nowrap;
+      }
+
+      /* ── Status bar ── */
+      .status-bar {
+        background: #1a1a1d;
+        border-top: 1px solid #2a2a2f;
+        font-size: 0.68rem;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .status-left, .status-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .status-live {
+        white-space: nowrap;
+        text-decoration: none;
+        color: inherit;
+      }
+      .status-live:hover { color: #ededef; }
+
+      .dot-live {
+        color: #7dd3a0;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+
+      .spark { letter-spacing: 1px; font-size: 0.7rem; }
+
+      .status-link {
+        color: #b0b0b8;
+        text-decoration: none;
+        padding: 0.3rem 0.5rem;
+        white-space: nowrap;
+      }
+
+      .status-link:hover { color: #ededef; background: #2a2a2f; }
+
+      .sk { color: #ededef; font-weight: 700; }
+
+      /* ── Semantic ── */
+      .d { color: #7a7a84; }
+      .ok { color: #7dd3a0; }
+      .err { color: #f87171; }
+      .warn { color: #fbbf24; }
+      .kw { color: #ededef; }
+      .str { color: #7dd3a0; }
+      .cmt { color: #7a7a84; font-style: italic; }
+
+      .cmd { color: #ededef !important; font-weight: 700; text-decoration: none !important; }
+      .cmd:hover { color: #7dd3a0 !important; }
+
+      /* ── Sandbox output ── */
+      #p-sandbox-output {
+        padding: 0;
+      }
+
+      #sandbox-result {
+        margin: 0;
+        padding: 0;
+        font-size: 0.78rem;
+        line-height: 1.7;
+        color: #b0b0b8;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /* ── Scrollbar ── */
+      .output-scroll::-webkit-scrollbar { width: 6px; }
+      .output-scroll::-webkit-scrollbar-track { background: transparent; }
+      .output-scroll::-webkit-scrollbar-thumb { background: #2a2a2f; }
+
+      /* ── Boot transitions ── */
+      .boot-hidden { opacity: 0; pointer-events: none; }
+      .boot-ready { opacity: 1; pointer-events: auto; }
+
+      #boot-output {
+        font-size: 0.78rem;
+        line-height: 1.7;
+        color: #b0b0b8;
+        padding: 0.5rem 1.5rem;
+      }
+
+      #boot-output .line {
+        white-space: pre-wrap;
+      }
+
+      /* ── Responsive: Tablets ── */
+      @media (max-width: 900px) {
+        .top-bar .d { display: none; }
+      }
+
+      /* ── Responsive: Mobile (collapse sidebar to horizontal tabs) ── */
+      @media (max-width: 768px) {
+        .main {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+
+        .sidebar {
+          flex-direction: row;
+          flex-wrap: nowrap;
+          border-right: none;
+          border-bottom: 1px solid #2a2a2f;
+          overflow-x: auto;
+          overflow-y: visible;
+          scrollbar-width: none;
+          gap: 0;
+          min-height: auto;
+        }
+        .sidebar::-webkit-scrollbar { display: none; }
+        .sidebar .panel-title { display: none; }
+        .sidebar .si-divider { display: none; }
+
+        .si {
+          width: auto;
+          border-bottom: 2px solid transparent;
+          border-right: none;
+          flex-shrink: 0;
+          padding: 0.5rem 0.7rem;
+          font-size: 0.75rem;
+        }
+
+        .si-key { display: none; }
+
+        .si {
+          color: #7a7a84;
+          background: none;
+        }
+
+        .si::after {
+          content: '|';
+          margin-left: 0.6ch;
+          color: #2a2a2f;
+        }
+
+        .si:last-child::after {
+          content: '';
+        }
+
+        .si::before { content: ''; }
+        .si.active::before {
+          content: '[';
+          color: #7dd3a0;
+        }
+        .si.active::after {
+          content: ']';
+          margin-left: 0;
+          color: #7dd3a0;
+        }
+        .si.active {
+          color: #ededef;
+          background: none;
+          border-bottom: none;
+        }
+
+        .p { font-size: 0.8rem; }
+        .bar { font-size: 0.68rem; }
+        .prompt-bar { height: 44px; }
+        .prompt-prefix, .prompt-input { font-size: 0.8rem; }
+
+        .hero-typed { display: none; }
+        .status-right { display: none; }
+      }
+
+      /* ── Responsive: Small phones ── */
+      @media (max-width: 480px) {
+        .tui { font-size: 0.68rem; }
+        .p { font-size: 0.72rem; line-height: 1.55; }
+        .si { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
+        .top-bar { font-size: 0.6rem; }
+      }
+
+      /* ── Touch: bigger targets ── */
+      @media (pointer: coarse) {
+        .si { min-height: 44px; }
+        .prompt-bar { height: 48px; }
+        .status-bar { min-height: 36px; }
+        .status-link { min-height: 36px; display: flex; align-items: center; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .dot-live { animation: none; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+<div class="tui" id="tui">
+
+  <!-- Top bar -->
+  <div class="bar top-bar">
+    <span><strong>skytale</strong> v0.5.1</span>
+    <span id="hero-typed" class="hero-typed"></span>
+    <span class="d">MLS (RFC 9420) · Apache 2.0</span>
+  </div>
+
+  <!-- Main: sidebar + output -->
+  <div class="main">
+
+    <!-- Sidebar (rendered dynamically by JS) -->
+    <div class="sidebar boot-hidden" id="sidebar"></div>
+
+    <!-- Output -->
+    <div class="output">
+      <div class="panel-title">output &mdash; <span id="output-cmd">skytale</span></div>
+      <div class="output-scroll" id="output-scroll">
+
+        <div id="boot-output" style="display:none"></div>
+
+        <pre class="p active" id="p-about">
+  Every agent protocol sends plaintext through servers
+  that can read it. <strong>Skytale encrypts all of them.</strong>
+
+  <span class="d">without skytale:</span>
+  Agent A → <span class="err">Server (reads everything)</span> → Agent B
+
+  <span class="d">with skytale:</span>
+  Agent A <span class="ok">→ Relay (sees nothing) →</span> Agent B
+
+  PROTOCOL          TODAY               WITH SKYTALE
+  ────────────────  ──────────────────  ────────────────
+  A2A (Google)      TLS transport only  <span class="ok">MLS end-to-end</span>
+  MCP (Anthropic)   stdio / HTTP        <span class="ok">MLS end-to-end</span>
+  ACP (IBM)         HTTP REST           <span class="ok">MLS end-to-end</span>
+  SLIM (AGNTCY)     pub/sub             <span class="ok">MLS end-to-end</span>
+  ANP / LMOS / NLIP HTTPS               <span class="ok">MLS end-to-end</span>
+
+  <strong>Zero-Knowledge Relay</strong>  — routes ciphertext, sees nothing
+  <strong>Verified Memory</strong>       — SharedContext, cryptographic attribution
+  <strong>Cryptographic ID</strong>      — DID:key per agent, every message signed
+  <strong>Audit Trail</strong>           — Hash-chained logs, W3C Trace Context
+
+  <span class="d">AGNTCY/SLIM compatible · Linux Foundation · RFC 9420</span>
+  <span class="d">Cross-protocol bridge: A2A ↔ ACP ↔ MCP ↔ SLIM</span>
+
+  <a href="#" class="cmd" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[SIGNUP]</a>  <span class="d">type: signup — GitHub OAuth, 10 seconds</span>
+  <span class="d">free · 1M messages/mo · no credit card</span>
+</pre>
+
+        <pre class="p" id="p-install">
+  <a href="https://docs.skytale.sh/integrations/langgraph/">langgraph</a>       pip install skytale-sdk[langgraph]
+  <a href="https://docs.skytale.sh/integrations/crewai/">crewai</a>          pip install skytale-sdk[crewai]
+  <a href="https://docs.skytale.sh/integrations/mcp/">mcp</a>             pip install skytale-sdk[mcp]
+  <a href="https://docs.skytale.sh/sdk/python/#openai-agents-sdk">openai-agents</a>   pip install skytale-sdk[openai]
+  <a href="https://docs.skytale.sh/sdk/python/#pydantic-ai">pydantic-ai</a>     pip install skytale-sdk[pydantic]
+  <a href="https://docs.skytale.sh/sdk/python/#smolagents-hugging-face">smolagents</a>      pip install skytale-sdk[smolagents]
+  <a href="https://docs.skytale.sh/sdk/python/#agno">agno</a>            pip install skytale-sdk[agno]
+  <a href="https://docs.skytale.sh/sdk/python/#google-adk">google-adk</a>      pip install skytale-sdk[adk]
+  <a href="https://docs.skytale.sh/sdk/python/#autogen">autogen</a>         pip install skytale-sdk[autogen]
+  <a href="https://docs.skytale.sh/sdk/python/#llamaindex">llamaindex</a>      pip install skytale-sdk[llamaindex]
+  <a href="https://docs.skytale.sh/sdk/python/#strands-aws">strands</a>         pip install skytale-sdk[strands]
+  <a href="https://docs.skytale.sh/integrations/agentkit/">agentkit</a>        pip install skytale-sdk[agentkit]
+  <a href="https://docs.skytale.sh/integrations/elizaos/">elizaos</a>         npm install @skytalesh/plugin-eliza
+  <a href="https://docs.skytale.sh/integrations/goat/">goat-sdk</a>        npm install @skytalesh/plugin-goat
+  <a href="https://docs.skytale.sh/sdk/typescript/#mastra">mastra</a>          npm install @skytalesh/sdk
+
+  <span class="d">Protocol adapters: SLIM, A2A, ACP, MCP, ANP, LMOS, NLIP</span>
+</pre>
+
+        <pre class="p" id="p-code">
+  <span class="kw">from</span> skytale_sdk <span class="kw">import</span> SkytaleChannelManager
+
+  <span class="cmt"># Create an encrypted channel</span>
+  mgr = SkytaleChannelManager(
+      identity=<span class="str">b"agent-a"</span>,
+      api_key=<span class="str">"sk_live_..."</span>
+  )
+  mgr.create(<span class="str">"acme/trading/signals"</span>)
+
+  <span class="cmt"># Send — MLS encrypted before leaving your process</span>
+  mgr.send(<span class="str">"acme/trading/signals"</span>,
+           <span class="str">"whale alert: ETH accumulation detected"</span>)
+
+  <span class="cmt"># Receive — decrypted only by channel members</span>
+  msgs = mgr.receive(<span class="str">"acme/trading/signals"</span>)
+  <span class="cmt"># Relay saw: a4f8c2e1 9b3d7a06 5c8f1e4d...</span>
+  <span class="cmt"># Agent sees: "whale alert: ETH accumulation"</span>
+</pre>
+
+        <pre class="p" id="p-security">
+  <span class="err">[CRITICAL]</span> Compromised agent poisons your state
+  Without attribution, can't tell which agent wrote
+  false data. Downstream agents trust everything.
+  <span class="d">ref: OWASP Agentic Top 10 ASI06</span>
+  <span class="ok">fix: Every write signed with author's DID.</span>
+
+  <span class="err">[CRITICAL]</span> Can't explain agent decision chain
+  Regulators ask for the chain. No trace linking.
+  <span class="d">ref: EU AI Act Article 12</span>
+  <span class="ok">fix: Hash-chained logs + W3C Trace Context.</span>
+
+  <span class="warn">[WARNING]</span>  Two agents overwrite each other
+  Without causal ordering, one write silently wins.
+  <span class="ok">fix: HLC ordering + conflict resolution.</span>
+
+  <span class="warn">[WARNING]</span>  Agent contradicts yesterday
+  Without persistent state, decisions remade each session.
+  <span class="ok">fix: SharedContext with cryptographic attribution.</span>
+
+  ────────────────────────────────────────────
+
+  <span class="ok">[PASS]</span> EU AI Act — Article 12, record-keeping
+  <span class="ok">[PASS]</span> NIST AI 600-1 — agent identity &amp; delegation
+  <span class="ok">[PASS]</span> OWASP Top 10 — agent hijacking &amp; data leakage
+
+  <span class="d">3/3 compliance checks passed</span>
+</pre>
+
+        <pre class="p" id="p-pricing">
+  <strong>free</strong>        $0/mo
+              1M messages/mo
+              Unlimited agents, keys, channels
+              MLS encryption, federation, compliance
+              <a href="#" class="cmd" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[SIGNUP]</a> <span class="d">no credit card</span>
+
+  <strong>pro</strong>         $99/mo <span class="d">(coming soon)</span>
+              Unlimited messages, 99.9% SLA
+
+  <strong>enterprise</strong>  custom <span class="d">(coming soon)</span>
+              Dedicated relays, on-prem, 99.99%
+              <a href="mailto:contact@skytale.sh">contact@skytale.sh</a>
+
+  <span class="d">Self-host: Apache 2.0</span>
+  <span class="d"><a href="https://github.com/nicholasraimbault/skytale">github.com/nicholasraimbault/skytale</a></span>
+</pre>
+
+        <pre class="p" id="p-sandbox">
+  <strong>Live cryptography sandbox</strong>
+  Real MLS (RFC 9420) running in your browser via WebAssembly.
+
+  <strong>Commands:</strong>
+
+  encrypt <span class="str">"your message here"</span>
+    MLS encrypt via mls-rs compiled to WASM. Real ciphertext.
+
+  decrypt
+    Decrypts the last encrypted message.
+
+  keygen
+    Generates an Ed25519 keypair + DID:key identifier.
+
+  hash <span class="str">"any data"</span>
+    SHA-256 hash. Same algorithm Skytale uses for
+    audit log chaining.
+
+  <span class="d">Try it: type a command below.</span>
+  <span class="d">Example: encrypt "whale alert: ETH accumulation detected"</span>
+</pre>
+
+        <div class="p" id="p-sandbox-output" style="display:none">
+          <pre id="sandbox-result"></pre>
+        </div>
+
+        <!-- Authenticated panels (populated by JS) -->
+        <div class="p" id="p-channels"><pre id="channels-content">Loading...</pre></div>
+        <div class="p" id="p-messages"><pre id="messages-content">No channel selected. Type: subscribe org/ns/name</pre></div>
+        <div class="p" id="p-keys"><pre id="keys-content">Loading...</pre></div>
+        <div class="p" id="p-usage"><pre id="usage-content">Loading...</pre></div>
+        <div class="p" id="p-billing"><pre id="billing-content">Loading...</pre></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt -->
+  <div class="prompt-bar boot-hidden" id="prompt-bar">
+    <label for="prompt-input" class="prompt-prefix">$ skytale</label>
+    <input type="text" id="prompt-input" class="prompt-input" placeholder='try: encrypt "hello", signup, pricing' autocomplete="off" spellcheck="false" />
+    <span class="prompt-hint d" id="prompt-hint"></span>
+  </div>
+
+  <!-- Status bar -->
+  <div class="bar status-bar">
+    <div class="status-left">
+      <a href="https://status.skytale.sh" class="status-live"><span class="dot-live">●</span> <span id="status-text">checking...</span></a>
+      <a href="https://status.skytale.sh" class="d spark" id="spark">▁▁▁▁▁▁▁▁</a>
+      <a href="https://status.skytale.sh" class="d" id="latency">---</a>
+    </div>
+    <div class="status-right" id="status-right-content">
+      <a href="#" class="status-link" id="status-auth-link" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()"><span class="sk">enter</span> signup</a>
+      <a href="https://docs.skytale.sh/" class="status-link"><span class="sk">d</span> docs</a>
+      <a href="https://blog.skytale.sh/" class="status-link"><span class="sk">b</span> blog</a>
+      <a href="https://github.com/nicholasraimbault/skytale" class="status-link"><span class="sk">g</span> github</a>
+      <span class="status-link d"><span class="sk">esc</span> unfocus</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Auth module ──
+  const API = 'https://api.skytale.sh';
+
+  function getToken() { return localStorage.getItem('skytale_jwt'); }
+  function setToken(jwt) { localStorage.setItem('skytale_jwt', jwt); }
+  function clearToken() { localStorage.removeItem('skytale_jwt'); localStorage.removeItem('skytale_login'); }
+  function isAuthed() {
+    const t = getToken();
+    if (!t) return false;
+    try {
+      const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload.exp * 1000 > Date.now();
+    } catch { clearToken(); return false; }
+  }
+  function getLogin() { return localStorage.getItem('skytale_login') || 'user'; }
+
+  // ── API helper ──
+  async function api(method, path, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    if (res.status === 401) { clearToken(); renderSidebar(); throw new Error('session expired \u2014 type: signup'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'request failed');
+    return data;
+  }
+
+  // ── OAuth popup ──
+  window.startOAuth = function startOAuth() {
+    showSandboxResult('  Authenticating via GitHub...\n  A popup window should open.');
+    const w = window.open(API + '/auth/github?from=landing', 'skytale-auth', 'width=500,height=700');
+    window.addEventListener('message', function handler(e) {
+      if (e.data?.type !== 'skytale:auth') return;
+      window.removeEventListener('message', handler);
+      setToken(e.data.token);
+      onAuthComplete();
+    });
+  }
+
+  async function onAuthComplete() {
+    try {
+      const acct = await api('GET', '/v1/accounts/me');
+      localStorage.setItem('skytale_login', acct.github_login || acct.email || 'user');
+    } catch {}
+
+    let keyMsg = '';
+    try {
+      const key = await api('POST', '/v1/keys', { name: 'tui' });
+      keyMsg = `\n  Your API key (shown once \u2014 copy it now):\n  ${key.full_key}\n`;
+    } catch {}
+
+    renderSidebar();
+    updateStatusBar();
+    activate('channels');
+
+    showSandboxResult(
+      `  Authenticated as @${getLogin()}\n${keyMsg}\n  Next:\n  $ pip install skytale-sdk\n\n  Try: channels, keys, usage`
+    );
+  }
+
+  // ── DOM refs ──
+  const sidebarEl = document.getElementById('sidebar');
+  const cmdLabel = document.getElementById('output-cmd');
+  const promptInput = document.getElementById('prompt-input');
+  const hint = document.getElementById('prompt-hint');
+  const sandboxResult = document.getElementById('sandbox-result');
+  const sandboxHelp = document.getElementById('p-sandbox');
+  const sandboxOut = document.getElementById('p-sandbox-output');
+
+  // ── Sidebar rendering ──
+  // Note: sidebar content is built from trusted, developer-defined strings only
+  function renderSidebar() {
+    const authed = isAuthed();
+    const login = getLogin().replace(/[<>&"']/g, '');
+    let html = '';
+
+    if (authed) {
+      html = '<div class="panel-title">@' + login + '</div>';
+      html += btn('channels', '1');
+      html += btn('messages', '2');
+      html += btn('keys', '3');
+      html += btn('usage', '4');
+      html += btn('billing', '5');
+      html += '<div class="si-divider"></div>';
+      html += btn('about', '6');
+      html += btn('install', '7');
+      html += btn('code', '8');
+      html += btn('sandbox', '9');
+      html += '<div class="si-divider"></div>';
+      html += '<button class="si" data-panel="logout">logout</button>';
+    } else {
+      html = '<div class="panel-title">commands</div>';
+      html += btn('about', '1');
+      html += btn('install', '2');
+      html += btn('code', '3');
+      html += btn('security', '4');
+      html += btn('pricing', '5');
+      html += '<div class="si-divider"></div>';
+      html += btn('sandbox', '6');
+    }
+
+    sidebarEl.innerHTML = html;
+
+    sidebarEl.querySelectorAll('.si').forEach(function(b) {
+      b.addEventListener('click', function() {
+        if (b.dataset.panel === 'logout') { clearToken(); renderSidebar(); updateStatusBar(); activate('about'); return; }
+        activate(b.dataset.panel);
+      });
+    });
+
+    const first = sidebarEl.querySelector('.si');
+    if (first) first.classList.add('active');
+  }
+
+  function btn(panel, key) {
+    return '<button class="si" data-panel="' + panel + '" data-key="' + key + '"><span class="si-key">' + key + '</span>' + panel + '</button>';
+  }
+
+  // ── Panel activation ──
+  const cmdMap = {
+    about: 'skytale',
+    install: 'skytale integrations',
+    code: 'cat quickstart.py',
+    security: 'skytale security',
+    pricing: 'skytale pricing',
+    sandbox: 'skytale sandbox',
+    channels: 'skytale channels',
+    messages: 'skytale messages',
+    keys: 'skytale keys',
+    usage: 'skytale usage',
+    billing: 'skytale billing',
+  };
+
+  function activate(id) {
+    sidebarEl.querySelectorAll('.si').forEach(function(b) { b.classList.toggle('active', b.dataset.panel === id); });
+    document.querySelectorAll('.p').forEach(function(p) {
+      if (p.id === 'p-sandbox' || p.id === 'p-sandbox-output') {
+        if (id === 'sandbox') {
+          document.getElementById('p-sandbox').style.display = 'block';
+          document.getElementById('p-sandbox').classList.add('active');
+          document.getElementById('p-sandbox-output').style.display = 'none';
+          document.getElementById('p-sandbox-output').classList.remove('active');
+        } else {
+          p.classList.remove('active');
+          p.style.display = '';
+        }
+      } else {
+        p.classList.toggle('active', p.id === 'p-' + id);
+      }
+    });
+    cmdLabel.textContent = cmdMap[id] || id;
+    document.getElementById('output-scroll').scrollTop = 0;
+
+    if (isAuthed()) {
+      if (id === 'channels') loadChannels();
+      if (id === 'keys') loadKeys();
+      if (id === 'usage') loadUsage();
+      if (id === 'billing') loadBilling();
+    }
+  }
+
+  // ── Authenticated panel loaders ──
+  async function loadChannels() {
+    const el = document.getElementById('channels-content');
+    try {
+      const data = await api('GET', '/v1/channels');
+      if (!data.channels || data.channels.length === 0) {
+        el.textContent = '  No channels yet.\n\n  create channel org/namespace/name';
+        return;
+      }
+      let out = '  NAME                    CREATED\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+      for (const ch of data.channels) {
+        out += '  ' + ch.name.padEnd(24) + (ch.created_at?.slice(0, 10) || '') + '\n';
+      }
+      out += '\n  create channel <name>    invite <channel>';
+      el.textContent = out;
+    } catch (e) { el.textContent = '  Error: ' + e.message; }
+  }
+
+  async function loadKeys() {
+    const el = document.getElementById('keys-content');
+    try {
+      const data = await api('GET', '/v1/keys');
+      if (!data.keys || data.keys.length === 0) {
+        el.textContent = '  No API keys.\n\n  create key <name>';
+        return;
+      }
+      let out = '  NAME          PREFIX       CREATED\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+      for (const k of data.keys) {
+        out += '  ' + (k.name || '').padEnd(14) + (k.key_prefix || '').padEnd(13) + (k.created_at?.slice(0, 10) || '') + '\n';
+      }
+      out += '\n  create key <name>    revoke <key-id>';
+      el.textContent = out;
+    } catch (e) { el.textContent = '  Error: ' + e.message; }
+  }
+
+  async function loadUsage() {
+    const el = document.getElementById('usage-content');
+    try {
+      const data = await api('GET', '/v1/usage');
+      const msgs = data.messages_this_month || 0;
+      const limit = data.monthly_limit || 1000000;
+      const pct = Math.min(100, Math.round((msgs / limit) * 100));
+      const barLen = 20;
+      const filled = Math.round((pct / 100) * barLen);
+      const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(barLen - filled);
+      el.textContent = '  ' + new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '\n\n  messages sent     ' + msgs.toLocaleString() + ' / ' + limit.toLocaleString() + '\n  channels          ' + (data.channel_count || 0) + '\n  keys              ' + (data.key_count || 0) + '\n\n  ' + bar + ' ' + pct + '%\n\n  plan: ' + (data.plan || 'free');
+    } catch (e) { el.textContent = '  Error: ' + e.message; }
+  }
+
+  async function loadBilling() {
+    const el = document.getElementById('billing-content');
+    el.textContent = '  Current plan: Free ($0/mo)\n\n  [UPGRADE TO PRO]     type: upgrade\n  [MANAGE BILLING]     type: billing portal\n\n  Both open in a popup window.';
+  }
+
+  // ── Status bar update ──
+  // Note: status bar content uses trusted, developer-defined strings only
+  function updateStatusBar() {
+    const el = document.getElementById('status-auth-link');
+    if (isAuthed()) {
+      const login = getLogin().replace(/[<>&"']/g, '');
+      el.innerHTML = '<span class="sk">@' + login + '</span>';
+      el.removeAttribute('href');
+    } else {
+      el.innerHTML = '<span class="sk">enter</span> signup';
+      el.href = '#';
+    }
+  }
+
+  // ── MLS WASM module ──
+  let mlsLoaded = false;
+  let mlsMod = null;
+
+  async function loadMls() {
+    if (mlsLoaded) return mlsMod;
+    try {
+      const mod = await loadEsModule('/wasm/skytale_mls_wasm.js');
+      const wasmUrl = new URL('/wasm/skytale_mls_wasm_bg.wasm', location.origin);
+      await mod.default(wasmUrl);
+      mlsMod = mod;
+      mlsLoaded = true;
+      return mlsMod;
+    } catch (e) {
+      console.error('WASM MLS load failed:', e);
+      return null;
+    }
+  }
+
+  function loadEsModule(path) {
+    const url = new URL(path, location.origin).href;
+    const blob = new Blob(["export * from '" + url + "'; export { default } from '" + url + "';"], { type: 'text/javascript' });
+    const blobUrl = URL.createObjectURL(blob);
+    return import(blobUrl).finally(function() { URL.revokeObjectURL(blobUrl); });
+  }
+
+  // ── Crypto sandbox state ──
+  let lastCiphertextHex = null;
+  let mlsGroupCreated = false;
+
+  function toHex(buf) {
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
+  function showSandboxResult(text) {
+    activate('sandbox');
+    sandboxHelp.style.display = 'none';
+    sandboxOut.style.display = 'block';
+    sandboxOut.classList.add('active');
+    sandboxResult.textContent = text;
+    cmdLabel.textContent = 'sandbox';
+  }
+
+  async function runCrypto(input) {
+    const raw = input.replace(/^skytale\s*/, '');
+
+    const encMatch = raw.match(/^encrypt\s+["'](.+?)["']$/i) || raw.match(/^encrypt\s+(.+)$/i);
+    if (encMatch) {
+      const msg = encMatch[1];
+      showSandboxResult('  Loading MLS engine...');
+      const mls = await loadMls();
+      if (!mls) { showSandboxResult('  Error: MLS WASM module failed to load.'); return true; }
+      if (!mlsGroupCreated) {
+        await mls.create_group('skytale-demo-' + Math.random().toString(36).slice(2, 10));
+        mlsGroupCreated = true;
+      }
+      const hex = await mls.encrypt(msg);
+      lastCiphertextHex = hex;
+      const bytes = mls.hex_byte_count(hex);
+
+      showSandboxResult(
+        '  $ skytale encrypt "' + msg + '"\n\n' +
+        '  protocol:   MLS (RFC 9420)\n' +
+        '  engine:     mls-rs 0.54 compiled to WebAssembly\n' +
+        '  crypto:     SubtleCrypto (browser-native)\n' +
+        '  plaintext:  "' + msg + '"\n\n' +
+        '  ciphertext:\n' +
+        '  ' + hex.match(/.{1,48}/g).join('\n  ') + '\n\n' +
+        '  ' + bytes + ' bytes. Real MLS encryption. Try: decrypt'
+      );
+      return true;
+    }
+
+    if (raw === 'decrypt') {
+      if (!lastCiphertextHex) {
+        showSandboxResult('  No encrypted message. Try: encrypt "hello world"');
+        return true;
+      }
+      const mls = await loadMls();
+      if (!mls) { showSandboxResult('  Error: MLS WASM module failed to load.'); return true; }
+      const text = await mls.decrypt(lastCiphertextHex);
+      showSandboxResult(
+        '  $ skytale decrypt\n\n' +
+        '  protocol:   MLS (RFC 9420)\n' +
+        '  ciphertext: ' + lastCiphertextHex.slice(0, 48) + '...\n' +
+        '  decrypted:  "' + text + '"\n\n' +
+        '  The relay only ever saw the ciphertext.'
+      );
+      return true;
+    }
+
+    if (raw === 'keygen') {
+      const kp = await crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']);
+      const pub = await crypto.subtle.exportKey('raw', kp.publicKey);
+      const pubHex = toHex(pub);
+      const mc = new Uint8Array([0xed, 0x01, ...new Uint8Array(pub)]);
+      const did = 'did:key:z' + btoa(String.fromCharCode(...mc)).replace(/[+/=]/g, '').slice(0, 46);
+
+      showSandboxResult(
+        '  $ skytale keygen\n\n' +
+        '  algorithm:  Ed25519\n' +
+        '  public key: ' + pubHex + '\n' +
+        '  DID:key:    ' + did + '...\n\n' +
+        '  This identity signs every message and SharedContext\n' +
+        '  write. Other agents verify the signature before\n' +
+        '  trusting the data.'
+      );
+      return true;
+    }
+
+    const hashMatch = raw.match(/^hash\s+["'](.+?)["']$/i) || raw.match(/^hash\s+(.+)$/i);
+    if (hashMatch) {
+      const data = hashMatch[1];
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+      const hex = toHex(digest);
+
+      showSandboxResult(
+        '  $ skytale hash "' + data + '"\n\n' +
+        '  algorithm:  SHA-256\n' +
+        '  input:      "' + data + '"\n' +
+        '  digest:     ' + hex + '\n\n' +
+        '  Skytale chains these hashes to build tamper-evident\n' +
+        '  audit logs. Changing any entry breaks the chain.'
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  // ── Command aliases ──
+  const aliases = {
+    help: 'about', skytale: 'about', about: 'about',
+    protocols: 'about', protocol: 'about',
+    install: 'install', integrations: 'install', int: 'install',
+    code: 'code', demo: 'code', quickstart: 'code',
+    security: 'security', risks: 'security', risk: 'security',
+    compliance: 'security', comply: 'security',
+    pricing: 'pricing', price: 'pricing', plans: 'pricing',
+    sandbox: 'sandbox', try: 'sandbox', crypto: 'sandbox',
+  };
+
+  // ── Autocomplete ──
+  const allCmds = [...Object.keys(aliases), 'encrypt', 'decrypt', 'keygen', 'hash', 'signup', 'login', 'logout', 'create channel', 'create key', 'channels', 'keys', 'usage', 'billing', 'whoami', 'help'];
+
+  promptInput.addEventListener('input', function() {
+    const val = promptInput.value.trim().toLowerCase();
+    if (!val) { hint.textContent = ''; return; }
+    const match = allCmds.find(function(k) { return k.startsWith(val) && k !== val; });
+    hint.textContent = match ? 'tab \u2192 ' + match : '';
+  });
+
+  // ── Prompt handler ──
+  promptInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      const inputVal = promptInput.value.trim();
+      const raw = inputVal.toLowerCase().replace(/^skytale\s*/, '');
+
+      // 1. Crypto commands
+      const isCrypto = /^(encrypt|decrypt|keygen|hash)\b/i.test(raw);
+      if (isCrypto) {
+        promptInput.value = '';
+        hint.textContent = '';
+        runCrypto(raw);
+        return;
+      }
+
+      // 2. Auth commands
+      if (raw === 'signup' || raw === 'login' || raw === 'start') {
+        promptInput.value = '';
+        hint.textContent = '';
+        startOAuth();
+        return;
+      }
+      if (raw === 'logout') {
+        promptInput.value = '';
+        hint.textContent = '';
+        clearToken();
+        renderSidebar();
+        updateStatusBar();
+        activate('about');
+        showSandboxResult('  Logged out.');
+        return;
+      }
+
+      // 3. Auth-gated commands
+      const authGated = ['create channel', 'channels', 'keys', 'apikey', 'create key', 'usage', 'billing', 'upgrade', 'whoami'];
+      const isAuthGated = authGated.some(function(cmd) { return raw === cmd || raw.startsWith(cmd + ' '); });
+      if (isAuthGated) {
+        promptInput.value = '';
+        hint.textContent = '';
+
+        if (!isAuthed()) {
+          showSandboxResult('  Authentication required.\n  Type: signup    (GitHub \u2014 10 seconds)');
+          return;
+        }
+
+        // create channel <name>
+        const chMatch = raw.match(/^create channel\s+(.+)$/);
+        if (chMatch) {
+          (async function() {
+            try {
+              const result = await api('POST', '/v1/channels', { name: chMatch[1] });
+              showSandboxResult('  Channel created: ' + (result.name || chMatch[1]) + '\n\n  ID: ' + (result.id || 'n/a'));
+              activate('channels');
+            } catch (err) { showSandboxResult('  Error: ' + err.message); }
+          })();
+          return;
+        }
+        if (raw === 'channels') { activate('channels'); return; }
+        if (raw === 'keys') { activate('keys'); return; }
+
+        // apikey / create key <name>
+        const keyMatch = raw.match(/^(?:apikey|create key)\s*(.*)$/);
+        if (keyMatch !== null) {
+          const keyName = keyMatch[1] || ('tui-' + Date.now());
+          (async function() {
+            try {
+              const key = await api('POST', '/v1/keys', { name: keyName });
+              showSandboxResult('  API key created (shown once \u2014 copy it now):\n\n  name:   ' + (key.name || keyName) + '\n  key:    ' + key.full_key + '\n  prefix: ' + key.key_prefix);
+            } catch (err) { showSandboxResult('  Error: ' + err.message); }
+          })();
+          return;
+        }
+
+        if (raw === 'usage') { activate('usage'); return; }
+        if (raw === 'billing') { activate('billing'); return; }
+        if (raw === 'upgrade') {
+          showSandboxResult('  Pro plan coming soon.\n\n  Free tier: 1M messages/mo, unlimited channels.');
+          return;
+        }
+        if (raw === 'whoami') {
+          (async function() {
+            try {
+              const acct = await api('GET', '/v1/accounts/me');
+              showSandboxResult('  account:  @' + (acct.github_login || acct.email || 'user') + '\n  email:    ' + (acct.email || 'n/a') + '\n  plan:     ' + (acct.plan || 'free') + '\n  created:  ' + (acct.created_at?.slice(0, 10) || 'n/a'));
+            } catch (err) { showSandboxResult('  Error: ' + err.message); }
+          })();
+          return;
+        }
+        return;
+      }
+
+      // 4. Panel aliases
+      const panel = aliases[raw] || aliases[raw.split(' ')[0]];
+      if (panel) {
+        activate(panel);
+        if (panel === 'sandbox') {
+          sandboxHelp.style.display = 'block';
+          sandboxOut.style.display = 'none';
+        }
+        promptInput.value = '';
+        hint.textContent = '';
+      } else if (raw === 'pip install skytale-sdk') {
+        hint.textContent = '';
+        promptInput.value = '';
+        activate('install');
+      } else if (raw) {
+        hint.textContent = 'try: install, code, security, pricing, encrypt "hello"';
+        setTimeout(function() { hint.textContent = ''; }, 3000);
+        promptInput.value = '';
+      }
+    }
+    if (e.key === 'Escape') {
+      promptInput.blur();
+      promptInput.value = '';
+      hint.textContent = '';
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const val = promptInput.value.trim().toLowerCase();
+      const match = allCmds.find(function(k) { return k.startsWith(val) && k !== val; });
+      if (match) promptInput.value = match;
+    }
+  });
+
+  // ── Keyboard navigation ──
+  document.addEventListener('keydown', function(e) {
+    if (document.activeElement === promptInput && e.key !== 'Escape') return;
+
+    const items = Array.from(sidebarEl.querySelectorAll('.si[data-key]'));
+    const tab = items.find(function(i) { return i.dataset.key === e.key; });
+    if (tab) { activate(tab.dataset.panel); return; }
+
+    if (e.key === 'd') { window.location.href = 'https://docs.skytale.sh/'; return; }
+    if (e.key === 'b') { window.location.href = 'https://blog.skytale.sh/'; return; }
+    if (e.key === 'g') { window.open('https://github.com/nicholasraimbault/skytale'); return; }
+    if (e.key === 'Enter' && document.activeElement !== promptInput) {
+      if (!isAuthed()) { startOAuth(); }
+      return;
+    }
+
+    const allItems = Array.from(sidebarEl.querySelectorAll('.si'));
+    const idx = allItems.findIndex(function(i) { return i.classList.contains('active'); });
+    if (e.key === 'ArrowDown' || e.key === 'j') {
+      e.preventDefault();
+      const next = allItems[(idx + 1) % allItems.length];
+      if (next.dataset.panel) activate(next.dataset.panel);
+    }
+    if (e.key === 'ArrowUp' || e.key === 'k') {
+      e.preventDefault();
+      const prev = allItems[(idx - 1 + allItems.length) % allItems.length];
+      if (prev.dataset.panel) activate(prev.dataset.panel);
+    }
+    if (e.key === '/' || e.key === ':') {
+      e.preventDefault(); promptInput.focus();
+    }
+    if (e.key === 'Escape') { promptInput.blur(); }
+  });
+
+  // ── Typing animation helpers ──
+  async function typeLine(container, text) {
+    const line = document.createElement('div');
+    line.className = 'line';
+    container.appendChild(line);
+    for (const ch of text) {
+      line.textContent += ch;
+      await new Promise(function(r) { setTimeout(r, 40 + Math.random() * 20); });
+    }
+  }
+
+  async function printLines(container, lines) {
+    for (const text of lines) {
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.textContent = text;
+      container.appendChild(line);
+      await new Promise(function(r) { setTimeout(r, 25); });
+    }
+  }
+
+  function pause(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+  // ── Boot sequence ──
+  async function bootSequence() {
+    if (localStorage.getItem('skytale_booted') && !isAuthed()) {
+      revealUI();
+      return;
+    }
+    if (isAuthed()) {
+      revealUI();
+      showWelcomeBack();
+      return;
+    }
+
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) {
+      localStorage.setItem('skytale_booted', '1');
+      revealUI();
+      return;
+    }
+
+    const out = document.getElementById('boot-output');
+    out.style.display = 'block';
+    document.querySelectorAll('.p').forEach(function(p) { p.classList.remove('active'); });
+
+    let skipped = false;
+    function skip() { skipped = true; }
+    document.addEventListener('keydown', skip, { once: true });
+    document.addEventListener('click', skip, { once: true });
+
+    await typeLine(out, '$ skytale');
+    if (skipped) { finishBoot(out); return; }
+    await pause(200);
+    await printLines(out, [
+      '',
+      '  End-to-end encryption for AI agents.',
+      '',
+      '  Every agent protocol sends plaintext through servers',
+      '  that can read it. Skytale encrypts all of them.',
+    ]);
+    if (skipped) { finishBoot(out); return; }
+    await pause(400);
+    await typeLine(out, '$ skytale encrypt "hello from the landing page"');
+    if (skipped) { finishBoot(out); return; }
+    await pause(300);
+
+    let ciphertextLine = '  ciphertext: [loading MLS engine...]';
+    try {
+      const mls = await loadMls();
+      if (mls) {
+        await mls.create_group('boot-demo-' + Math.random().toString(36).slice(2));
+        const hex = await mls.encrypt('hello from the landing page');
+        ciphertextLine = '  ciphertext: ' + hex.slice(0, 48) + '...';
+        mlsGroupCreated = true;
+      }
+    } catch {}
+
+    if (skipped) { finishBoot(out); return; }
+    await printLines(out, [
+      '',
+      '  encrypting...',
+      '  plaintext:  "hello from the landing page"',
+      ciphertextLine,
+      '',
+      '  The relay sees only ciphertext. Your data stays yours.',
+    ]);
+    await pause(800);
+    finishBoot(out);
+  }
+
+  function finishBoot(out) {
+    out.style.display = 'none';
+    localStorage.setItem('skytale_booted', '1');
+    revealUI();
+  }
+
+  function revealUI() {
+    renderSidebar();
+    updateStatusBar();
+    const defaultPanel = isAuthed() ? 'channels' : 'about';
+    activate(defaultPanel);
+    document.getElementById('sidebar').classList.add('boot-ready');
+    document.getElementById('prompt-bar').classList.add('boot-ready');
+    setTimeout(function() { promptInput.focus(); }, 100);
+  }
+
+  async function showWelcomeBack() {
+    try {
+      const usage = await api('GET', '/v1/usage');
+      const msgs = usage.messages_this_month || 0;
+      const chans = usage.channel_count || 0;
+      showSandboxResult('  Welcome back, @' + getLogin() + '\n  ' + chans + ' channels \u00b7 ' + msgs.toLocaleString() + ' messages this month\n\n  Type help for commands.');
+      activate('channels');
+    } catch {
+      activate('channels');
+    }
+  }
+
+  // ── Typing animation (top bar, first visit) ──
+  (function() {
+    const el = document.getElementById('hero-typed');
+    const text = 'end-to-end encryption for AI agents';
+    const key = 'skytale-typed';
+
+    if (sessionStorage.getItem(key)) {
+      el.textContent = text;
+      return;
+    }
+
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) {
+      el.textContent = text;
+      sessionStorage.setItem(key, '1');
+      return;
+    }
+
+    let i = 0;
+    function tick() {
+      if (i <= text.length) {
+        el.textContent = text.slice(0, i) + '\u2588';
+        i++;
+        setTimeout(tick, 40 + Math.random() * 30);
+      } else {
+        el.textContent = text;
+        sessionStorage.setItem(key, '1');
+      }
+    }
+    tick();
+  })();
+
+  // ── Real relay health check ──
+  (function() {
+    const spark = document.getElementById('spark');
+    const lat = document.getElementById('latency');
+    const dot = document.querySelector('.dot-live');
+    const statusText = document.getElementById('status-text');
+    const chars = '\u2581\u2582\u2583\u2584\u2585\u2586\u2587';
+    const history = [];
+    const MAX = 8;
+
+    function renderSpark() {
+      const valid = history.filter(function(ms) { return ms > 0; });
+      if (valid.length < 2) {
+        spark.textContent = history.map(function(ms) { return ms < 0 ? '\u2581' : '\u2584'; }).join('');
+        return;
+      }
+      const min = Math.min(...valid);
+      const max = Math.max(...valid);
+      const range = max - min || 1;
+      spark.textContent = history.map(function(ms) {
+        if (ms < 0) return '\u2581';
+        const idx = Math.round(((ms - min) / range) * 6);
+        return chars[idx];
+      }).join('');
+    }
+
+    async function ping() {
+      const t0 = performance.now();
+      try {
+        await fetch('https://api.skytale.sh/v1/health', {
+          method: 'HEAD', mode: 'no-cors', cache: 'no-store',
+          signal: AbortSignal.timeout(5000),
+        });
+        const ms = Math.round(performance.now() - t0);
+        history.push(ms);
+        if (history.length > MAX) history.shift();
+
+        lat.textContent = ms + 'ms';
+        renderSpark();
+        dot.style.color = '#7dd3a0';
+        statusText.textContent = 'relay online';
+      } catch {
+        history.push(-1);
+        if (history.length > MAX) history.shift();
+
+        lat.textContent = 'timeout';
+        renderSpark();
+        dot.style.color = '#f87171';
+        statusText.textContent = 'relay offline';
+      }
+    }
+
+    ping();
+    setInterval(ping, 8000);
+  })();
+
+  // ── Init ──
+  bootSequence();
+</script>
+
   </body>
 </html>
