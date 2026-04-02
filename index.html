@@ -664,7 +664,7 @@
 
   <!-- Top bar -->
   <div class="bar top-bar">
-    <span><strong>skytale</strong> v0.5.1</span>
+    <span><strong>skytale</strong> v0.5.2</span>
     <span id="hero-typed" class="hero-typed"></span>
     <span class="d">MLS (RFC 9420) · Apache 2.0</span>
   </div>
@@ -939,7 +939,7 @@
 
   <!-- Prompt -->
   <div class="prompt-bar boot-hidden" id="prompt-bar">
-    <label for="prompt-input" class="prompt-prefix">$ skytale</label>
+    <label for="prompt-input" class="prompt-prefix">skytale> </label>
     <input type="text" id="prompt-input" class="prompt-input" autocomplete="off" spellcheck="false" />
     <span class="prompt-hint d" id="prompt-hint"></span>
   </div>
@@ -1084,12 +1084,14 @@
       html += '<button class="si" data-panel="logout">logout</button>';
     } else if (authed) {
       // New user (0 channels)
-      html = '<div class="panel-title">get started</div>';
+      html = '<div class="panel-title">@' + login + '</div>';
       html += btn('connect', '1');
-      html += btn('keys', '2');
-      html += btn('usage', '3');
+      html += btn('activity', '2');
+      html += btn('channels', '3');
+      html += btn('keys', '4');
+      html += btn('usage', '5');
       html += '<div class="si-divider"></div>';
-      html += btn('about', '4');
+      html += btn('about', '6');
       html += '<div class="si-divider"></div>';
       html += '<button class="si" data-panel="logout">logout</button>';
     } else {
@@ -1755,12 +1757,12 @@
   function updatePromptPrefix(panelId) {
     var prefix = document.querySelector('.prompt-prefix');
     var prefixes = {
-      about: '$ skytale', pricing: '$ skytale', connect: '$ skytale connect',
-      activity: '$ skytale activity', channels: '$ skytale channels',
-      keys: '$ skytale keys', usage: '$ skytale usage',
-      install: '$ skytale', code: '$ skytale', security: '$ skytale'
+      about: 'skytale', pricing: 'skytale', connect: 'skytale/connect',
+      activity: 'skytale/activity', channels: 'skytale/channels',
+      keys: 'skytale/keys', usage: 'skytale/usage',
+      install: 'skytale', code: 'skytale', security: 'skytale'
     };
-    prefix.textContent = (prefixes[panelId] || '$ skytale') + ' ';
+    prefix.textContent = (prefixes[panelId] || 'skytale') + '> ';
   }
 
   // ── Doctor command ──
