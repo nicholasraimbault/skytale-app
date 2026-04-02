@@ -226,6 +226,8 @@
       .si:hover { color: #b0b0b8; background: #141416; }
       .si.active { color: #ededef; background: #1a1a1d; }
 
+      .si .bracket { display: none; }
+
       .si-key {
         display: inline-flex;
         align-items: center;
@@ -248,6 +250,9 @@
         color: #7dd3a0;
         border-color: #7dd3a0;
       }
+
+      .si-cta { color: #7a7a84; }
+      .si-cta.active { color: #ededef; }
 
       /* ── Output ── */
       .output {
@@ -276,6 +281,11 @@
         color: #b0b0b8;
         white-space: pre-wrap;
         word-break: break-word;
+        overflow-x: auto;
+      }
+
+      .p pre {
+        overflow-x: auto;
       }
 
       .p.active { display: block; }
@@ -385,6 +395,10 @@
       .cmd { color: #ededef !important; font-weight: 700; text-decoration: none !important; }
       .cmd:hover { color: #7dd3a0 !important; }
 
+      .cta { color: #7dd3a0 !important; font-weight: 700; text-decoration: none !important; }
+      .cta .cta-text { text-decoration: underline; text-underline-offset: 3px; }
+      .cta:hover { color: #ededef !important; }
+
       /* ── Sandbox output ── */
       #p-sandbox-output {
         padding: 0;
@@ -420,6 +434,17 @@
         white-space: pre-wrap;
       }
 
+      /* ── Responsive: Large desktop ── */
+      @media (min-width: 1440px) {
+        .main {
+          grid-template-columns: 180px 1fr;
+        }
+
+        .output-scroll {
+          max-width: 100ch;
+        }
+      }
+
       /* ── Responsive: Tablets ── */
       @media (max-width: 900px) {
         .top-bar .d { display: none; }
@@ -442,47 +467,50 @@
           scrollbar-width: none;
           gap: 0;
           min-height: auto;
+          padding: 0.3rem 0.75rem;
         }
         .sidebar::-webkit-scrollbar { display: none; }
         .sidebar .panel-title { display: none; }
         .sidebar .si-divider { display: none; }
 
         .si {
+          display: inline-flex;
+          align-items: center;
+          gap: 0;
           width: auto;
-          border-bottom: 2px solid transparent;
+          border-bottom: none;
           border-right: none;
-          flex-shrink: 0;
-          padding: 0.5rem 0.7rem;
+          padding: 0.2rem 0;
           font-size: 0.75rem;
+          color: #7a7a84;
+          background: none;
+          white-space: nowrap;
         }
 
         .si-key { display: none; }
 
-        .si {
-          color: #7a7a84;
-          background: none;
-        }
-
-        .si::after {
-          content: '|';
-          margin-left: 0.6ch;
+        .si::before {
+          content: '\00a0|\00a0';
           color: #2a2a2f;
         }
 
-        .si:last-child::after {
+        .si:first-of-type::before {
           content: '';
         }
 
-        .si::before { content: ''; }
-        .si.active::before {
-          content: '[';
+        .si::after {
+          content: '';
+        }
+
+        .si .bracket {
+          display: none;
           color: #7dd3a0;
         }
-        .si.active::after {
-          content: ']';
-          margin-left: 0;
-          color: #7dd3a0;
+
+        .si.active .bracket {
+          display: inline;
         }
+
         .si.active {
           color: #ededef;
           background: none;
@@ -496,6 +524,10 @@
 
         .hero-typed { display: none; }
         .status-right { display: none; }
+
+        .connect-frameworks { padding: 0 0.25rem; }
+        .connect-code { font-size: 0.72rem; }
+        .connect-footer { font-size: 0.72rem; }
       }
 
       /* ── Responsive: Small phones ── */
@@ -504,18 +536,125 @@
         .p { font-size: 0.72rem; line-height: 1.55; }
         .si { font-size: 0.65rem; padding: 0.4rem 0.5rem; }
         .top-bar { font-size: 0.6rem; }
+        .connect-code { font-size: 0.65rem; }
+        .connect-footer { font-size: 0.65rem; }
+        .connect-tab, .tui-tab { font-size: 0.65rem; }
       }
 
       /* ── Touch: bigger targets ── */
       @media (pointer: coarse) {
-        .si { min-height: 44px; }
+        .si { min-height: 44px; display: inline-flex; align-items: center; }
         .prompt-bar { height: 48px; }
         .status-bar { min-height: 36px; }
         .status-link { min-height: 36px; display: flex; align-items: center; }
+        .connect-tab, .tui-tab { min-height: 36px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
         .dot-live { animation: none; }
+      }
+
+      /* ── Shared TUI tab style (connect panel + mobile sidebar) ── */
+      .tui-tab {
+        font-family: inherit;
+        font-size: 0.75rem;
+        color: #7a7a84;
+        background: none;
+        border: none;
+        padding: 0.2rem 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        white-space: nowrap;
+      }
+
+      .tui-tab::before {
+        content: '\00a0|\00a0';
+        color: #2a2a2f;
+      }
+
+      .tui-tab:first-child::before {
+        content: '';
+      }
+
+      .tui-tab::after {
+        content: '';
+      }
+
+      .tui-tab.active {
+        color: #ededef;
+      }
+
+      .tui-tab .bracket {
+        display: none;
+        color: #7dd3a0;
+      }
+
+      .tui-tab.active .bracket {
+        display: inline;
+      }
+
+      .tui-tab:hover {
+        color: #b0b0b8;
+      }
+
+      /* ── Connect panel ── */
+      .connect-frameworks {
+        padding: 0 0.5rem;
+      }
+
+      .connect-tabs {
+        display: flex;
+        gap: 0;
+        margin: 0.5rem 0;
+        flex-wrap: wrap;
+      }
+
+      .connect-code {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 1.7;
+        color: #b0b0b8;
+        overflow-x: auto;
+      }
+
+      .connect-footer {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 1.7;
+        color: #b0b0b8;
+        overflow-x: auto;
+      }
+
+      .copy, .copy-all {
+        color: #7a7a84;
+        cursor: pointer;
+        font-size: 0.7rem;
+      }
+
+      .copy:hover, .copy-all:hover {
+        color: #ededef;
+      }
+
+      .action {
+        color: #7dd3a0;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .action:hover {
+        color: #ededef;
+      }
+
+      @media (max-width: 768px) {
+        .connect-tabs {
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .connect-tabs::-webkit-scrollbar { display: none; }
+        .connect-tab { flex-shrink: 0; }
       }
     </style>
   </head>
@@ -547,19 +686,25 @@
   Every agent protocol sends plaintext through servers
   that can read it. <strong>Skytale encrypts all of them.</strong>
 
+<span class="d">  ── The Problem ──────────────────────────────</span>
+
   <span class="d">without skytale:</span>
   Agent A → <span class="err">Server (reads everything)</span> → Agent B
 
   <span class="d">with skytale:</span>
   Agent A <span class="ok">→ Relay (sees nothing) →</span> Agent B
 
-  PROTOCOL          TODAY               WITH SKYTALE
-  ────────────────  ──────────────────  ────────────────
+<span class="d">  ── Protocols ────────────────────────────────</span>
+
+  <span class="d">PROTOCOL          TODAY               WITH SKYTALE</span>
+  <span class="d">────────────────  ──────────────────  ────────────────</span>
   A2A (Google)      TLS transport only  <span class="ok">MLS end-to-end</span>
   MCP (Anthropic)   stdio / HTTP        <span class="ok">MLS end-to-end</span>
   ACP (IBM)         HTTP REST           <span class="ok">MLS end-to-end</span>
   SLIM (AGNTCY)     pub/sub             <span class="ok">MLS end-to-end</span>
   ANP / LMOS / NLIP HTTPS               <span class="ok">MLS end-to-end</span>
+
+<span class="d">  ── Features ─────────────────────────────────</span>
 
   <strong>Zero-Knowledge Relay</strong>  — routes ciphertext, sees nothing
   <strong>Verified Memory</strong>       — SharedContext, cryptographic attribution
@@ -569,31 +714,43 @@
   <span class="d">AGNTCY/SLIM compatible · Linux Foundation · RFC 9420</span>
   <span class="d">Cross-protocol bridge: A2A ↔ ACP ↔ MCP ↔ SLIM</span>
 
-  <a href="#" class="cmd" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[SIGNUP]</a>  <span class="d">type: signup — GitHub OAuth, 10 seconds</span>
+<span class="d">  ─────────────────────────────────────────────</span>
+
+  <span class="kw">$</span> pip install skytale-sdk
+
+  <a href="#" class="cta" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[<span class="cta-text">SIGNUP</span>]</a>  <span class="d">GitHub OAuth, 10 seconds</span>
   <span class="d">free · 1M messages/mo · no credit card</span>
 </pre>
 
         <pre class="p" id="p-install">
-  <a href="https://docs.skytale.sh/integrations/langgraph/">langgraph</a>       pip install skytale-sdk[langgraph]
-  <a href="https://docs.skytale.sh/integrations/crewai/">crewai</a>          pip install skytale-sdk[crewai]
-  <a href="https://docs.skytale.sh/integrations/mcp/">mcp</a>             pip install skytale-sdk[mcp]
-  <a href="https://docs.skytale.sh/sdk/python/#openai-agents-sdk">openai-agents</a>   pip install skytale-sdk[openai]
-  <a href="https://docs.skytale.sh/sdk/python/#pydantic-ai">pydantic-ai</a>     pip install skytale-sdk[pydantic]
-  <a href="https://docs.skytale.sh/sdk/python/#smolagents-hugging-face">smolagents</a>      pip install skytale-sdk[smolagents]
-  <a href="https://docs.skytale.sh/sdk/python/#agno">agno</a>            pip install skytale-sdk[agno]
-  <a href="https://docs.skytale.sh/sdk/python/#google-adk">google-adk</a>      pip install skytale-sdk[adk]
-  <a href="https://docs.skytale.sh/sdk/python/#autogen">autogen</a>         pip install skytale-sdk[autogen]
-  <a href="https://docs.skytale.sh/sdk/python/#llamaindex">llamaindex</a>      pip install skytale-sdk[llamaindex]
-  <a href="https://docs.skytale.sh/sdk/python/#strands-aws">strands</a>         pip install skytale-sdk[strands]
-  <a href="https://docs.skytale.sh/integrations/agentkit/">agentkit</a>        pip install skytale-sdk[agentkit]
-  <a href="https://docs.skytale.sh/integrations/elizaos/">elizaos</a>         npm install @skytalesh/plugin-eliza
-  <a href="https://docs.skytale.sh/integrations/goat/">goat-sdk</a>        npm install @skytalesh/plugin-goat
-  <a href="https://docs.skytale.sh/sdk/typescript/#mastra">mastra</a>          npm install @skytalesh/sdk
+<span class="d">  ── Frameworks ─────────────────────────────</span>
 
-  <span class="d">Protocol adapters: SLIM, A2A, ACP, MCP, ANP, LMOS, NLIP</span>
+  <a href="https://docs.skytale.sh/integrations/langgraph/">langgraph</a>       <span class="kw">$</span> pip install skytale-sdk[langgraph]
+  <a href="https://docs.skytale.sh/integrations/crewai/">crewai</a>          <span class="kw">$</span> pip install skytale-sdk[crewai]
+  <a href="https://docs.skytale.sh/integrations/mcp/">mcp</a>             <span class="kw">$</span> pip install skytale-sdk[mcp]
+  <a href="https://docs.skytale.sh/sdk/python/#openai-agents-sdk">openai-agents</a>   <span class="kw">$</span> pip install skytale-sdk[openai]
+  <a href="https://docs.skytale.sh/sdk/python/#pydantic-ai">pydantic-ai</a>     <span class="kw">$</span> pip install skytale-sdk[pydantic]
+  <a href="https://docs.skytale.sh/sdk/python/#smolagents-hugging-face">smolagents</a>      <span class="kw">$</span> pip install skytale-sdk[smolagents]
+  <a href="https://docs.skytale.sh/sdk/python/#agno">agno</a>            <span class="kw">$</span> pip install skytale-sdk[agno]
+  <a href="https://docs.skytale.sh/sdk/python/#google-adk">google-adk</a>      <span class="kw">$</span> pip install skytale-sdk[adk]
+  <a href="https://docs.skytale.sh/sdk/python/#autogen">autogen</a>         <span class="kw">$</span> pip install skytale-sdk[autogen]
+  <a href="https://docs.skytale.sh/sdk/python/#llamaindex">llamaindex</a>      <span class="kw">$</span> pip install skytale-sdk[llamaindex]
+  <a href="https://docs.skytale.sh/sdk/python/#strands-aws">strands</a>         <span class="kw">$</span> pip install skytale-sdk[strands]
+  <a href="https://docs.skytale.sh/integrations/agentkit/">agentkit</a>        <span class="kw">$</span> pip install skytale-sdk[agentkit]
+  <a href="https://docs.skytale.sh/integrations/elizaos/">elizaos</a>         <span class="kw">$</span> npm install @skytalesh/plugin-eliza
+  <a href="https://docs.skytale.sh/integrations/goat/">goat-sdk</a>        <span class="kw">$</span> npm install @skytalesh/plugin-goat
+  <a href="https://docs.skytale.sh/sdk/typescript/#mastra">mastra</a>          <span class="kw">$</span> npm install @skytalesh/sdk
+
+<span class="d">  ── Protocol Adapters ──────────────────────</span>
+
+  <span class="d">SLIM, A2A, ACP, MCP, ANP, LMOS, NLIP</span>
 </pre>
 
         <pre class="p" id="p-code">
+<span class="d">  ── quickstart.py ──────────────────────────</span>
+
+  <span class="kw">$</span> cat quickstart.py
+
   <span class="kw">from</span> skytale_sdk <span class="kw">import</span> SkytaleChannelManager
 
   <span class="cmt"># Create an encrypted channel</span>
@@ -611,9 +768,13 @@
   msgs = mgr.receive(<span class="str">"acme/trading/signals"</span>)
   <span class="cmt"># Relay saw: a4f8c2e1 9b3d7a06 5c8f1e4d...</span>
   <span class="cmt"># Agent sees: "whale alert: ETH accumulation"</span>
+
+  <span class="kw">$</span> python quickstart.py
 </pre>
 
         <pre class="p" id="p-security">
+<span class="d">  ── Risks ──────────────────────────────────</span>
+
   <span class="err">[CRITICAL]</span> Compromised agent poisons your state
   Without attribution, can't tell which agent wrote
   false data. Downstream agents trust everything.
@@ -633,7 +794,7 @@
   Without persistent state, decisions remade each session.
   <span class="ok">fix: SharedContext with cryptographic attribution.</span>
 
-  ────────────────────────────────────────────
+<span class="d">  ── Compliance ─────────────────────────────</span>
 
   <span class="ok">[PASS]</span> EU AI Act — Article 12, record-keeping
   <span class="ok">[PASS]</span> NIST AI 600-1 — agent identity &amp; delegation
@@ -643,44 +804,52 @@
 </pre>
 
         <pre class="p" id="p-pricing">
-  <strong>free</strong>        $0/mo
+<span class="d">  ── Plans ──────────────────────────────────</span>
+
+  <strong>free</strong>        <span class="d">$0/mo</span>
               1M messages/mo
               Unlimited agents, keys, channels
               MLS encryption, federation, compliance
-              <a href="#" class="cmd" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[SIGNUP]</a> <span class="d">no credit card</span>
+              <a href="#" class="cta" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[<span class="cta-text">SIGNUP</span>]</a> <span class="d">no credit card</span>
 
-  <strong>pro</strong>         $99/mo <span class="d">(coming soon)</span>
+  <strong>pro</strong>         <span class="d">$99/mo (coming soon)</span>
               Unlimited messages, 99.9% SLA
 
-  <strong>enterprise</strong>  custom <span class="d">(coming soon)</span>
+<span class="d">  ── Enterprise ─────────────────────────────</span>
+
+  <strong>enterprise</strong>  <span class="d">custom (coming soon)</span>
               Dedicated relays, on-prem, 99.99%
               <a href="mailto:contact@skytale.sh">contact@skytale.sh</a>
 
-  <span class="d">Self-host: Apache 2.0</span>
+<span class="d">  ─────────────────────────────────────────────</span>
+
+  <span class="d">Self-host:</span> Apache 2.0
   <span class="d"><a href="https://github.com/nicholasraimbault/skytale">github.com/nicholasraimbault/skytale</a></span>
 </pre>
 
         <pre class="p" id="p-sandbox">
+<span class="d">  ── Cryptography Sandbox ───────────────────</span>
+
   <strong>Live cryptography sandbox</strong>
   Real MLS (RFC 9420) running in your browser via WebAssembly.
 
-  <strong>Commands:</strong>
-
-  encrypt <span class="str">"your message here"</span>
+  <span class="kw">$</span> encrypt <span class="str">"your message here"</span>
     MLS encrypt via mls-rs compiled to WASM. Real ciphertext.
 
-  decrypt
+  <span class="kw">$</span> decrypt
     Decrypts the last encrypted message.
 
-  keygen
+  <span class="kw">$</span> keygen
     Generates an Ed25519 keypair + DID:key identifier.
 
-  hash <span class="str">"any data"</span>
+  <span class="kw">$</span> hash <span class="str">"any data"</span>
     SHA-256 hash. Same algorithm Skytale uses for
     audit log chaining.
 
+<span class="d">  ─────────────────────────────────────────────</span>
+
   <span class="d">Try it: type a command below.</span>
-  <span class="d">Example: encrypt "whale alert: ETH accumulation detected"</span>
+  <span class="d">Example:</span> <span class="kw">$</span> encrypt <span class="str">"whale alert: ETH accumulation detected"</span>
 </pre>
 
         <div class="p" id="p-sandbox-output" style="display:none">
@@ -689,10 +858,80 @@
 
         <!-- Authenticated panels (populated by JS) -->
         <div class="p" id="p-channels"><pre id="channels-content">Loading...</pre></div>
-        <div class="p" id="p-messages"><pre id="messages-content">No channel selected. Type: subscribe org/ns/name</pre></div>
+        <div class="p" id="p-activity"><pre id="activity-content">Loading...</pre></div>
         <div class="p" id="p-keys"><pre id="keys-content">Loading...</pre></div>
         <div class="p" id="p-usage"><pre id="usage-content">Loading...</pre></div>
-        <div class="p" id="p-billing"><pre id="billing-content">Loading...</pre></div>
+
+        <!-- Connect panel -->
+        <div class="p" id="p-connect"><pre>
+  Get your agents encrypted.
+
+<span class="d">  ── Install ──────────────────────────────────</span>
+
+  <span class="kw">$</span> pip install skytale-sdk
+  <span class="kw">$</span> export SKYTALE_API_KEY=<span id="connect-key">&lt;your-api-key&gt;</span>  <a href="#" class="cta" id="connect-signup-cta" onclick="event.preventDefault();if(typeof startOAuth==='function')startOAuth()">[<span class="cta-text">SIGNUP</span>]</a><span id="connect-auth-check" style="display:none" class="ok">&#10003;</span>
+  <span class="copy" id="copy-setup-btn" data-text="pip install skytale-sdk\nexport SKYTALE_API_KEY=YOUR_KEY_HERE">[COPY SETUP]</span>
+
+<span class="d">  ── Add to your code ───────────────────────</span>
+</pre>
+
+<div class="connect-frameworks">
+  <div class="connect-tabs">
+    <button class="connect-tab tui-tab active" data-fw="langgraph"><span class="bracket">[</span>LangGraph<span class="bracket">]</span></button>
+    <button class="connect-tab tui-tab" data-fw="crewai"><span class="bracket">[</span>CrewAI<span class="bracket">]</span></button>
+    <button class="connect-tab tui-tab" data-fw="openai"><span class="bracket">[</span>OpenAI<span class="bracket">]</span></button>
+    <button class="connect-tab tui-tab" data-fw="pydantic"><span class="bracket">[</span>Pydantic AI<span class="bracket">]</span></button>
+    <button class="connect-tab tui-tab" data-fw="raw"><span class="bracket">[</span>Raw SDK<span class="bracket">]</span></button>
+  </div>
+<pre class="connect-code" id="fw-langgraph">
+  from skytale_sdk.integrations import langgraph
+
+  app = langgraph.encrypt(
+      graph.compile(),
+      channel="myorg/myapp/agents",
+  )
+  <span class="copy-all" data-fw="langgraph">[COPY CODE]</span></pre><pre class="connect-code" id="fw-crewai" style="display:none">
+  from skytale_sdk.integrations import crewai
+
+  encrypted_crew = crewai.encrypt(
+      crew,
+      channel="myorg/myapp/agents",
+  )
+  <span class="copy-all" data-fw="crewai">[COPY CODE]</span></pre><pre class="connect-code" id="fw-openai" style="display:none">
+  from skytale_sdk.integrations import openai_agents
+
+  encrypted_agent = openai_agents.encrypt(
+      agent,
+      channel="myorg/myapp/agents",
+  )
+  <span class="copy-all" data-fw="openai">[COPY CODE]</span></pre><pre class="connect-code" id="fw-pydantic" style="display:none">
+  from skytale_sdk.integrations import pydantic_ai
+
+  encrypted_agent = pydantic_ai.encrypt(
+      agent,
+      channel="myorg/myapp/agents",
+  )
+  <span class="copy-all" data-fw="pydantic">[COPY CODE]</span></pre><pre class="connect-code" id="fw-raw" style="display:none">
+  from skytale_sdk import SkytaleChannelManager
+
+  mgr = SkytaleChannelManager(identity=b"my-agent")
+  mgr.create("myorg/myapp/agents")
+  mgr.send("myorg/myapp/agents", "hello")
+  <span class="copy-all" data-fw="raw">[COPY CODE]</span></pre></div>
+
+<pre class="connect-footer">
+  Run your agents. Check the <span class="action" data-cmd="activity">activity tab</span>.
+
+  <span class="action" data-cmd="install">15 frameworks supported &#8594;</span>
+
+<span class="d">  ── AI coding tools ────────────────────────</span>
+
+  <span class="kw">$</span> claude mcp add skytale -- \              <span class="copy" data-text="claude mcp add skytale -- python -m skytale_sdk.integrations._mcp">[COPY]</span>
+      python -m skytale_sdk.integrations._mcp
+
+  Then ask your AI: "Create an encrypted channel"
+</pre>
+        </div>
 
       </div>
     </div>
@@ -701,7 +940,7 @@
   <!-- Prompt -->
   <div class="prompt-bar boot-hidden" id="prompt-bar">
     <label for="prompt-input" class="prompt-prefix">$ skytale</label>
-    <input type="text" id="prompt-input" class="prompt-input" placeholder='try: encrypt "hello", signup, pricing' autocomplete="off" spellcheck="false" />
+    <input type="text" id="prompt-input" class="prompt-input" autocomplete="off" spellcheck="false" />
     <span class="prompt-hint d" id="prompt-hint"></span>
   </div>
 
@@ -746,7 +985,7 @@
     const token = getToken();
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
-    if (res.status === 401) { clearToken(); renderSidebar(); throw new Error('session expired \u2014 type: signup'); }
+    if (res.status === 401) { throw new Error('unauthorized'); }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'request failed');
     return data;
@@ -754,15 +993,24 @@
 
   // ── OAuth popup ──
   window.startOAuth = function startOAuth() {
-    showSandboxResult('  Authenticating via GitHub...\n  A popup window should open.');
-    const w = window.open(API + '/auth/github?from=landing', 'skytale-auth', 'width=500,height=700');
-    window.addEventListener('message', function handler(e) {
-      if (e.data?.type !== 'skytale:auth') return;
-      window.removeEventListener('message', handler);
-      setToken(e.data.token);
-      onAuthComplete();
-    });
+    // Redirect to GitHub OAuth — callback redirects back to skytale.sh/#token=JWT
+    window.location.href = API + '/auth/github?from=landing';
   }
+
+  // Check for token in URL fragment on page load (OAuth callback return)
+  // Sets a flag so bootSequence() knows to skip — onAuthComplete handles the UI.
+  let oauthReturn = false;
+  (() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#token=')) {
+      const token = hash.slice(7);
+      if (token) {
+        history.replaceState(null, '', window.location.pathname);
+        setToken(token);
+        oauthReturn = true;
+      }
+    }
+  })();
 
   async function onAuthComplete() {
     try {
@@ -770,19 +1018,20 @@
       localStorage.setItem('skytale_login', acct.github_login || acct.email || 'user');
     } catch {}
 
-    let keyMsg = '';
     try {
       const key = await api('POST', '/v1/keys', { name: 'tui' });
-      keyMsg = `\n  Your API key (shown once \u2014 copy it now):\n  ${key.full_key}\n`;
+      if (key && key.key) {
+        sessionStorage.setItem('skytale_first_key', key.key);
+      }
     } catch {}
 
+    await checkUserState();
+    fillConnectApiKey();
     renderSidebar();
     updateStatusBar();
-    activate('channels');
-
-    showSandboxResult(
-      `  Authenticated as @${getLogin()}\n${keyMsg}\n  Next:\n  $ pip install skytale-sdk\n\n  Try: channels, keys, usage`
-    );
+    activate('connect');
+    flashStatus('\u2713 authenticated as @' + getLogin());
+    updatePromptHint();
   }
 
   // ── DOM refs ──
@@ -794,6 +1043,26 @@
   const sandboxHelp = document.getElementById('p-sandbox');
   const sandboxOut = document.getElementById('p-sandbox-output');
 
+  // ── Panel tracking ──
+  let currentPanel = 'about';
+  let previousPanel = 'about';
+
+  // ── Status flash ──
+  let statusFlashing = false;
+
+  // ── User state check ──
+  let userHasChannels = false;
+
+  async function checkUserState() {
+    try {
+      const data = await api('GET', '/v1/channels');
+      userHasChannels = data.channels && data.channels.length > 0;
+      sessionStorage.setItem('skytale_has_channels', userHasChannels ? '1' : '');
+    } catch {
+      userHasChannels = sessionStorage.getItem('skytale_has_channels') === '1';
+    }
+  }
+
   // ── Sidebar rendering ──
   // Note: sidebar content is built from trusted, developer-defined strings only
   function renderSidebar() {
@@ -801,29 +1070,34 @@
     const login = getLogin().replace(/[<>&"']/g, '');
     let html = '';
 
-    if (authed) {
+    if (authed && userHasChannels) {
+      // Active user (has channels)
       html = '<div class="panel-title">@' + login + '</div>';
-      html += btn('channels', '1');
-      html += btn('messages', '2');
+      html += btn('activity', '1');
+      html += btn('channels', '2');
       html += btn('keys', '3');
       html += btn('usage', '4');
-      html += btn('billing', '5');
       html += '<div class="si-divider"></div>';
+      html += btn('connect', '5');
       html += btn('about', '6');
-      html += btn('install', '7');
-      html += btn('code', '8');
-      html += btn('sandbox', '9');
+      html += '<div class="si-divider"></div>';
+      html += '<button class="si" data-panel="logout">logout</button>';
+    } else if (authed) {
+      // New user (0 channels)
+      html = '<div class="panel-title">get started</div>';
+      html += btn('connect', '1');
+      html += btn('keys', '2');
+      html += btn('usage', '3');
+      html += '<div class="si-divider"></div>';
+      html += btn('about', '4');
       html += '<div class="si-divider"></div>';
       html += '<button class="si" data-panel="logout">logout</button>';
     } else {
       html = '<div class="panel-title">commands</div>';
       html += btn('about', '1');
-      html += btn('install', '2');
-      html += btn('code', '3');
-      html += btn('security', '4');
-      html += btn('pricing', '5');
+      html += btn('pricing', '2');
       html += '<div class="si-divider"></div>';
-      html += btn('sandbox', '6');
+      html += btnCta('connect', '3', 'get started');
     }
 
     sidebarEl.innerHTML = html;
@@ -840,8 +1114,13 @@
   }
 
   function btn(panel, key) {
-    return '<button class="si" data-panel="' + panel + '" data-key="' + key + '"><span class="si-key">' + key + '</span>' + panel + '</button>';
+    return '<button class="si" data-panel="' + panel + '" data-key="' + key + '"><span class="si-key">' + key + '</span><span class="bracket">[</span>' + panel + '<span class="bracket">]</span></button>';
   }
+
+  function btnCta(panel, key, label) {
+    return '<button class="si si-cta" data-panel="' + panel + '" data-key="' + key + '"><span class="si-key">' + key + '</span><span class="bracket">[</span>' + (label || panel) + '<span class="bracket">]</span></button>';
+  }
+  // Note: no spaces around bracket spans — they're flush against the text
 
   // ── Panel activation ──
   const cmdMap = {
@@ -852,13 +1131,19 @@
     pricing: 'skytale pricing',
     sandbox: 'skytale sandbox',
     channels: 'skytale channels',
-    messages: 'skytale messages',
     keys: 'skytale keys',
     usage: 'skytale usage',
-    billing: 'skytale billing',
+    connect: 'skytale connect',
+    activity: 'skytale activity',
   };
 
   function activate(id) {
+    // Disconnect live activity when switching away
+    if (currentPanel === 'activity' && id !== 'activity' && activityLive) {
+      stopLiveActivity();
+    }
+    previousPanel = currentPanel;
+    currentPanel = id;
     sidebarEl.querySelectorAll('.si').forEach(function(b) { b.classList.toggle('active', b.dataset.panel === id); });
     document.querySelectorAll('.p').forEach(function(p) {
       if (p.id === 'p-sandbox' || p.id === 'p-sandbox-output') {
@@ -878,12 +1163,17 @@
     cmdLabel.textContent = cmdMap[id] || id;
     document.getElementById('output-scroll').scrollTop = 0;
 
+    if (id === 'activity') loadActivity();
+    if (id === 'connect') fillConnectApiKey();
+
     if (isAuthed()) {
       if (id === 'channels') loadChannels();
       if (id === 'keys') loadKeys();
       if (id === 'usage') loadUsage();
-      if (id === 'billing') loadBilling();
     }
+
+    updatePromptPrefix(id);
+    updatePromptHint();
   }
 
   // ── Authenticated panel loaders ──
@@ -892,16 +1182,76 @@
     try {
       const data = await api('GET', '/v1/channels');
       if (!data.channels || data.channels.length === 0) {
-        el.textContent = '  No channels yet.\n\n  create channel org/namespace/name';
+        el.textContent = '  \u2500\u2500 Channels \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n  No channels yet.\n\n  Create your first encrypted channel:\n\n  $ create channel org/namespace/name\n\n  Or add Skytale to your existing framework:\n\n  $ pip install skytale-sdk\n\n  from skytale_sdk.integrations import langgraph\n  app = langgraph.encrypt(graph.compile(),\n      channel="myorg/myapp/agents")';
         return;
       }
-      let out = '  NAME                    CREATED\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+
+      el.textContent = '';
+      const header = document.createTextNode('  Channels');
+      el.appendChild(header);
+      el.appendChild(document.createTextNode('                                              '));
+      const refresh = document.createElement('span');
+      refresh.className = 'action';
+      refresh.dataset.cmd = 'channels-refresh';
+      refresh.textContent = '[REFRESH]';
+      el.appendChild(refresh);
+
+      el.appendChild(document.createTextNode('\n\n'));
+      el.appendChild(document.createTextNode('  ' + 'CHANNEL'.padEnd(28) + 'MEMBERS'.padEnd(10) + 'LAST ACTIVE'.padEnd(14) + 'CREATED' + '\n'));
+      el.appendChild(document.createTextNode('  ' + '\u2500'.repeat(65) + '\n'));
+
       for (const ch of data.channels) {
-        out += '  ' + ch.name.padEnd(24) + (ch.created_at?.slice(0, 10) || '') + '\n';
+        el.appendChild(document.createTextNode('  '));
+        const nameLink = document.createElement('span');
+        nameLink.className = 'action';
+        nameLink.dataset.cmd = 'channel ' + ch.name;
+        nameLink.textContent = ch.name;
+        el.appendChild(nameLink);
+
+        const padding = Math.max(1, 28 - (ch.name || '').length);
+        const members = String(ch.member_count || 0).padEnd(10);
+        const lastActive = ch.last_message_at ? timeAgo(new Date(ch.last_message_at)).padEnd(14) : '---'.padEnd(14);
+        const created = ch.created_at?.slice(0, 10) || '';
+        el.appendChild(document.createTextNode(' '.repeat(padding) + members + lastActive + created + '\n'));
       }
-      out += '\n  create channel <name>    invite <channel>';
-      el.textContent = out;
+
+      el.appendChild(document.createTextNode('\n  create channel <name>    channel <name> for details'));
     } catch (e) { el.textContent = '  Error: ' + e.message; }
+  }
+
+  async function showChannelDetail(name) {
+    const el = document.getElementById('channels-content');
+    try {
+      const data = await api('GET', '/v1/channels');
+      const ch = (data.channels || []).find(function(c) { return c.name === name || c.id === name; });
+      if (!ch) {
+        el.textContent = '  Channel not found: ' + name;
+        const back = document.createElement('span');
+        back.className = 'action';
+        back.dataset.cmd = 'channels';
+        back.textContent = '[BACK]';
+        el.appendChild(document.createTextNode('\n\n  '));
+        el.appendChild(back);
+        return;
+      }
+
+      el.textContent = '';
+      el.appendChild(document.createTextNode('  ' + ch.name + '\n\n'));
+      el.appendChild(document.createTextNode('  Members:  ' + (ch.member_count || 0) + '        '));
+      el.appendChild(document.createTextNode('Created: ' + (ch.created_at?.slice(0, 10) || '') + '\n'));
+      if (ch.last_message_at) {
+        el.appendChild(document.createTextNode('  Last msg: ' + timeAgo(new Date(ch.last_message_at)) + '\n'));
+      }
+      el.appendChild(document.createTextNode('\n  invite ' + ch.name + '    activity --channel ' + ch.name + '\n\n  '));
+
+      const back = document.createElement('span');
+      back.className = 'action';
+      back.dataset.cmd = 'channels';
+      back.textContent = '[BACK]';
+      el.appendChild(back);
+    } catch (e) {
+      el.textContent = '  Error: ' + e.message;
+    }
   }
 
   async function loadKeys() {
@@ -909,15 +1259,39 @@
     try {
       const data = await api('GET', '/v1/keys');
       if (!data.keys || data.keys.length === 0) {
-        el.textContent = '  No API keys.\n\n  create key <name>';
+        el.textContent = '  \u2500\u2500 Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n  No API keys.\n\n  $ create key <name>';
         return;
       }
-      let out = '  NAME          PREFIX       CREATED\n  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+
+      el.textContent = '';
+      el.appendChild(document.createTextNode('  API Keys'));
+      el.appendChild(document.createTextNode('                                              '));
+      const createBtn = document.createElement('span');
+      createBtn.className = 'action';
+      createBtn.dataset.cmd = 'keys-create';
+      createBtn.textContent = '[CREATE NEW]';
+      el.appendChild(createBtn);
+
+      el.appendChild(document.createTextNode('\n\n'));
+      el.appendChild(document.createTextNode('  ' + 'NAME'.padEnd(16) + 'PREFIX'.padEnd(16) + 'CREATED'.padEnd(14) + 'LAST USED' + '\n'));
+      el.appendChild(document.createTextNode('  ' + '\u2500'.repeat(65) + '\n'));
+
       for (const k of data.keys) {
-        out += '  ' + (k.name || '').padEnd(14) + (k.key_prefix || '').padEnd(13) + (k.created_at?.slice(0, 10) || '') + '\n';
+        const name = (k.name || '').padEnd(16);
+        const prefix = (k.key_prefix || '').padEnd(16);
+        const created = (k.created_at?.slice(0, 10) || '').padEnd(14);
+        const lastUsed = k.last_used_at ? timeAgo(new Date(k.last_used_at)) : 'never';
+
+        el.appendChild(document.createTextNode('  ' + name + prefix + created + lastUsed.padEnd(12)));
+        const revoke = document.createElement('span');
+        revoke.className = 'action';
+        revoke.dataset.cmd = 'revoke-key ' + k.id;
+        revoke.textContent = '[REVOKE]';
+        el.appendChild(revoke);
+        el.appendChild(document.createTextNode('\n'));
       }
-      out += '\n  create key <name>    revoke <key-id>';
-      el.textContent = out;
+
+      el.appendChild(document.createTextNode('\n  create key <name>    revoke key <id>'));
     } catch (e) { el.textContent = '  Error: ' + e.message; }
   }
 
@@ -931,13 +1305,294 @@
       const barLen = 20;
       const filled = Math.round((pct / 100) * barLen);
       const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(barLen - filled);
-      el.textContent = '  ' + new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '\n\n  messages sent     ' + msgs.toLocaleString() + ' / ' + limit.toLocaleString() + '\n  channels          ' + (data.channel_count || 0) + '\n  keys              ' + (data.key_count || 0) + '\n\n  ' + bar + ' ' + pct + '%\n\n  plan: ' + (data.plan || 'free');
+      const plan = data.plan || 'free';
+
+      el.textContent = '';
+      el.appendChild(document.createTextNode(
+        '  ' + new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '\n\n' +
+        '  messages sent     ' + msgs.toLocaleString() + ' / ' + limit.toLocaleString() + '\n' +
+        '  channels          ' + (data.channel_count || 0) + '\n' +
+        '  keys              ' + (data.key_count || 0) + '\n\n' +
+        '  ' + bar + ' ' + pct + '%\n\n' +
+        '  plan: ' + plan + '\n\n'
+      ));
+
+      // Billing actions
+      if (plan === 'free') {
+        el.appendChild(document.createTextNode('  '));
+        const upgrade = document.createElement('span');
+        upgrade.className = 'action';
+        upgrade.dataset.cmd = 'stripe-checkout';
+        upgrade.textContent = '[UPGRADE TO PRO]';
+        el.appendChild(upgrade);
+        el.appendChild(document.createTextNode('  $99/mo \u2014 unlimited messages, 99.9% SLA\n'));
+      }
+      el.appendChild(document.createTextNode('  '));
+      const manage = document.createElement('span');
+      manage.className = 'action';
+      manage.dataset.cmd = 'stripe-portal';
+      manage.textContent = '[MANAGE BILLING]';
+      el.appendChild(manage);
+      el.appendChild(document.createTextNode('  '));
+      const exportUsage = document.createElement('span');
+      exportUsage.className = 'action';
+      exportUsage.dataset.cmd = 'export-usage';
+      exportUsage.textContent = '[EXPORT]';
+      el.appendChild(exportUsage);
+      el.appendChild(document.createTextNode('\n'));
+
+      // Fetch billing status silently
+      try {
+        const billing = await api('GET', '/v1/billing');
+        if (billing.status) {
+          el.appendChild(document.createTextNode('\n  billing status: ' + billing.status));
+          if (billing.current_period_end) {
+            el.appendChild(document.createTextNode('\n  renews: ' + billing.current_period_end.slice(0, 10)));
+          }
+        }
+      } catch {}
     } catch (e) { el.textContent = '  Error: ' + e.message; }
   }
 
-  async function loadBilling() {
-    const el = document.getElementById('billing-content');
-    el.textContent = '  Current plan: Free ($0/mo)\n\n  [UPGRADE TO PRO]     type: upgrade\n  [MANAGE BILLING]     type: billing portal\n\n  Both open in a popup window.';
+  // ── Stripe billing functions ──
+  async function openStripeCheckout() {
+    try {
+      const data = await api('POST', '/v1/billing/checkout');
+      if (data.checkout_url) window.open(data.checkout_url, '_blank');
+    } catch (e) {
+      showSandboxResult('  Error: ' + e.message);
+    }
+  }
+
+  async function openStripePortal() {
+    try {
+      const data = await api('POST', '/v1/billing/portal');
+      if (data.portal_url) window.open(data.portal_url, '_blank');
+    } catch (e) {
+      showSandboxResult('  Error: ' + e.message);
+    }
+  }
+
+  window.openStripeCheckout = openStripeCheckout;
+  window.openStripePortal = openStripePortal;
+
+  // ── Activity panel loader ──
+  let activityOffset = 0;
+  const ACTIVITY_LIMIT = 20;
+
+  async function loadActivity() {
+    const el = document.getElementById('activity-content');
+    try {
+      const data = await api('GET', '/v1/activity?limit=' + ACTIVITY_LIMIT + '&offset=' + activityOffset);
+      if (!data.entries || data.entries.length === 0) {
+        if (activityOffset === 0) {
+          el.textContent = '';
+          const emptyText = document.createTextNode(
+            '  \u2500\u2500 Activity \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n' +
+            '  No activity yet.\n\n' +
+            '  Once your agents communicate through Skytale,\n' +
+            '  you\'ll see their messages, channel events, and\n' +
+            '  key usage here in real time.\n\n  \u2192 '
+          );
+          el.appendChild(emptyText);
+          const getStarted = document.createElement('span');
+          getStarted.className = 'action';
+          getStarted.dataset.cmd = 'connect';
+          getStarted.textContent = 'get started';
+          el.appendChild(getStarted);
+          el.appendChild(document.createTextNode('  '));
+          var emptyLiveBtn = document.createElement('span');
+          emptyLiveBtn.className = 'action';
+          emptyLiveBtn.dataset.cmd = 'logs --follow';
+          emptyLiveBtn.textContent = '[LIVE]';
+          el.appendChild(emptyLiveBtn);
+          return;
+        }
+        el.textContent = '  No more entries.';
+        return;
+      }
+
+      const total = data.total || data.entries.length;
+      let out = '  Recent activity';
+      out += '                                          ';
+      el.textContent = '';
+
+      const headerText = document.createTextNode(out);
+      el.appendChild(headerText);
+      const refresh = document.createElement('span');
+      refresh.className = 'action';
+      refresh.dataset.cmd = 'activity-refresh';
+      refresh.textContent = '[REFRESH]';
+      el.appendChild(refresh);
+      el.appendChild(document.createTextNode('  '));
+
+      if (activityLive) {
+        var liveIndicator = document.createElement('span');
+        liveIndicator.style.color = '#7dd3a0';
+        liveIndicator.textContent = '\u25CF live';
+        el.appendChild(liveIndicator);
+        el.appendChild(document.createTextNode('  '));
+        var stopBtn = document.createElement('span');
+        stopBtn.className = 'action';
+        stopBtn.dataset.cmd = 'stop';
+        stopBtn.textContent = '[STOP]';
+        el.appendChild(stopBtn);
+      } else {
+        var liveBtn = document.createElement('span');
+        liveBtn.className = 'action';
+        liveBtn.dataset.cmd = 'logs --follow';
+        liveBtn.textContent = '[LIVE]';
+        el.appendChild(liveBtn);
+      }
+
+      el.appendChild(document.createTextNode('\n\n'));
+
+      for (const entry of data.entries) {
+        const ago = timeAgo(new Date(entry.created_at));
+        const action = entry.action || '';
+        const resource = entry.resource_id || '';
+
+        // Dot color by action type
+        let dotColor = '#b0b0b8'; // white/default for key/account events
+        if (action.includes('message') || action === 'send' || action === 'receive') {
+          dotColor = '#7dd3a0'; // green for messages
+        } else if (action.includes('channel') || action === 'join' || action === 'leave' || action === 'create_channel') {
+          dotColor = '#fbbf24'; // yellow for channel events
+        }
+
+        const dot = document.createElement('span');
+        dot.style.color = dotColor;
+        dot.textContent = '\u25CF';
+        el.appendChild(document.createTextNode('  '));
+        el.appendChild(dot);
+        el.appendChild(document.createTextNode(' ' + ago.padEnd(12) + action.padEnd(18)));
+
+        // Make channel names clickable
+        if (resource && (action.includes('channel') || action.includes('message') || action === 'send' || action === 'receive' || action === 'join' || action === 'leave' || action === 'create_channel')) {
+          const chanLink = document.createElement('span');
+          chanLink.className = 'action';
+          chanLink.dataset.cmd = 'channel ' + resource;
+          chanLink.textContent = resource;
+          el.appendChild(chanLink);
+        } else {
+          el.appendChild(document.createTextNode(resource));
+        }
+        el.appendChild(document.createTextNode('\n'));
+      }
+
+      el.appendChild(document.createTextNode('\n  \u2500\u2500 showing ' + (activityOffset + 1) + '-' + (activityOffset + data.entries.length) + ' of ' + total + ' \u2500\u2500\n\n  '));
+
+      if (activityOffset > 0) {
+        const prev = document.createElement('span');
+        prev.className = 'action';
+        prev.dataset.cmd = 'activity-prev';
+        prev.textContent = '[PREV]';
+        el.appendChild(prev);
+        el.appendChild(document.createTextNode('  '));
+      }
+      if (activityOffset + data.entries.length < total) {
+        const next = document.createElement('span');
+        next.className = 'action';
+        next.dataset.cmd = 'activity-next';
+        next.textContent = '[NEXT]';
+        el.appendChild(next);
+      }
+    } catch (e) {
+      el.textContent = '  Error loading activity: ' + e.message;
+    }
+  }
+
+  function timeAgo(date) {
+    const s = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (s < 60) return s + 's ago';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  }
+
+  async function loadActivityFiltered(queryExtra) {
+    const el = document.getElementById('activity-content');
+    try {
+      const data = await api('GET', '/v1/activity?limit=' + ACTIVITY_LIMIT + '&' + queryExtra);
+      if (!data.entries || data.entries.length === 0) {
+        el.textContent = '  No matching activity.\n\n  ';
+        const back = document.createElement('span');
+        back.className = 'action';
+        back.dataset.cmd = 'activity';
+        back.textContent = '[BACK TO ALL]';
+        el.appendChild(back);
+        return;
+      }
+      // Reuse the same rendering logic as loadActivity
+      el.textContent = '';
+      el.appendChild(document.createTextNode('  Filtered activity (' + queryExtra + ')\n\n'));
+      for (const entry of data.entries) {
+        const ago = timeAgo(new Date(entry.created_at));
+        const action = entry.action || '';
+        const resource = entry.resource_id || '';
+        let dotColor = '#b0b0b8';
+        if (action.includes('message') || action === 'send' || action === 'receive') dotColor = '#7dd3a0';
+        else if (action.includes('channel') || action === 'join' || action === 'leave' || action === 'create_channel') dotColor = '#fbbf24';
+        const dot = document.createElement('span');
+        dot.style.color = dotColor;
+        dot.textContent = '\u25CF';
+        el.appendChild(document.createTextNode('  '));
+        el.appendChild(dot);
+        el.appendChild(document.createTextNode(' ' + ago.padEnd(12) + action.padEnd(18) + resource + '\n'));
+      }
+      el.appendChild(document.createTextNode('\n  '));
+      const back = document.createElement('span');
+      back.className = 'action';
+      back.dataset.cmd = 'activity';
+      back.textContent = '[BACK TO ALL]';
+      el.appendChild(back);
+    } catch (e) {
+      el.textContent = '  Error: ' + e.message;
+    }
+  }
+
+  // ── Connect panel helpers ──
+  function fillConnectApiKey() {
+    const keyEl = document.getElementById('connect-key');
+    const copySetup = document.getElementById('copy-setup-btn');
+    if (!keyEl) return;
+
+    if (isAuthed()) {
+      const key = sessionStorage.getItem('skytale_first_key') || 'sk_live_...';
+      keyEl.textContent = key;
+      if (copySetup) copySetup.dataset.text = 'pip install skytale-sdk\nexport SKYTALE_API_KEY=' + key;
+      const signupCta = document.getElementById('connect-signup-cta');
+      const authCheck = document.getElementById('connect-auth-check');
+      if (signupCta) signupCta.style.display = 'none';
+      if (authCheck) authCheck.style.display = 'inline';
+    } else {
+      keyEl.textContent = '<your-api-key>';
+      if (copySetup) copySetup.dataset.text = 'pip install skytale-sdk\nexport SKYTALE_API_KEY=YOUR_KEY_HERE';
+      const signupCta = document.getElementById('connect-signup-cta');
+      const authCheck = document.getElementById('connect-auth-check');
+      if (signupCta) signupCta.style.display = 'inline';
+      if (authCheck) authCheck.style.display = 'none';
+    }
+  }
+
+  // ── Contextual prompt hint ──
+  function updatePromptHint() {
+    if (!isAuthed()) {
+      promptInput.placeholder = 'try: encrypt "hello world"';
+      return;
+    }
+    if (currentPanel === 'activity' && activityLive) {
+      promptInput.placeholder = 'stop | refresh';
+      return;
+    }
+    var hints = {
+      channels: 'list | create <name> | view <name> | refresh',
+      keys: 'list | create <name> | revoke <id> | refresh',
+      activity: 'refresh | --channel <name> | --last 1h | follow',
+      usage: 'upgrade | billing portal | export',
+      connect: 'doctor | encrypt "test" | install'
+    };
+    promptInput.placeholder = hints[currentPanel] || 'help for commands';
   }
 
   // ── Status bar update ──
@@ -989,12 +1644,187 @@
   }
 
   function showSandboxResult(text) {
+    sidebarEl.querySelectorAll('.si').forEach(function(b) { b.classList.remove('active'); });
+    previousPanel = currentPanel;
+    promptInput.placeholder = 'esc to return';
     activate('sandbox');
     sandboxHelp.style.display = 'none';
     sandboxOut.style.display = 'block';
     sandboxOut.classList.add('active');
     sandboxResult.textContent = text;
     cmdLabel.textContent = 'sandbox';
+  }
+
+  // ── Flash status ──
+  function flashStatus(text, duration) {
+    statusFlashing = true;
+    var el = document.getElementById('status-text');
+    el.textContent = text;
+    el.style.color = '#7dd3a0';
+    setTimeout(function() {
+      statusFlashing = false;
+      el.style.color = '';
+      // Health check will restore on next ping
+    }, duration || 5000);
+  }
+
+  // ── Live WebSocket activity streaming ──
+  let activityWs = null;
+  let activityLive = false;
+
+  async function startLiveActivity() {
+    if (activityWs) return; // already connected
+    if (!isAuthed()) return;
+
+    activityLive = true;
+
+    // Get a short-lived JWT for the WebSocket
+    var jwt;
+    try {
+      var tokenData = await api('POST', '/v1/tokens');
+      jwt = tokenData.token;
+    } catch (e) {
+      flashStatus('\u2717 could not get relay token: ' + e.message);
+      activityLive = false;
+      return;
+    }
+
+    try {
+      activityWs = new WebSocket('wss://relay.skytale.sh/ws');
+    } catch (e) {
+      flashStatus('\u2717 WebSocket connection failed');
+      activityLive = false;
+      return;
+    }
+
+    activityWs.onopen = function() {
+      // Send auth message
+      activityWs.send(JSON.stringify({ type: 'auth', token: jwt }));
+      flashStatus('\u25CF live \u2014 connected to relay');
+
+      // Subscribe to all user channels
+      api('GET', '/v1/channels').then(function(data) {
+        var channels = data.channels || [];
+        channels.forEach(function(ch) {
+          activityWs.send(JSON.stringify({ type: 'subscribe', channel: ch.name }));
+        });
+        if (channels.length > 0) {
+          flashStatus('\u25CF live \u2014 subscribed to ' + channels.length + ' channel' + (channels.length > 1 ? 's' : ''));
+        }
+      }).catch(function() {});
+    };
+
+    activityWs.onmessage = function(event) {
+      try {
+        var msg = JSON.parse(event.data);
+        if (msg.type === 'message') {
+          // Prepend to activity panel if it's active
+          var el = document.getElementById('activity-content');
+          if (el && currentPanel === 'activity') {
+            var line = '  \u25CF now       message      ' + msg.channel + '\n';
+            el.textContent = line + el.textContent;
+          }
+          // Also flash if not on activity panel
+          if (currentPanel !== 'activity') {
+            flashStatus('\u25CF ' + msg.channel + ' \u2014 new message');
+          }
+        }
+      } catch (e) {}
+    };
+
+    activityWs.onclose = function() {
+      activityWs = null;
+      activityLive = false;
+    };
+
+    activityWs.onerror = function() {
+      activityWs = null;
+      activityLive = false;
+    };
+  }
+
+  function stopLiveActivity() {
+    if (activityWs) {
+      activityWs.close();
+      activityWs = null;
+    }
+    activityLive = false;
+  }
+
+  // ── Panel-aware prompt prefix ──
+  function updatePromptPrefix(panelId) {
+    var prefix = document.querySelector('.prompt-prefix');
+    var prefixes = {
+      about: '$ skytale', pricing: '$ skytale', connect: '$ skytale connect',
+      activity: '$ skytale activity', channels: '$ skytale channels',
+      keys: '$ skytale keys', usage: '$ skytale usage',
+      install: '$ skytale', code: '$ skytale', security: '$ skytale'
+    };
+    prefix.textContent = (prefixes[panelId] || '$ skytale') + ' ';
+  }
+
+  // ── Doctor command ──
+  async function runDoctor() {
+    var out = '  \u2500\u2500 Diagnostics \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+
+    // API health
+    try {
+      var t0 = performance.now();
+      await fetch('https://api.skytale.sh/v1/health', { mode: 'no-cors', cache: 'no-store' });
+      var ms = Math.round(performance.now() - t0);
+      out += '  \u2713 API reachable           api.skytale.sh    ' + ms + 'ms\n';
+    } catch(e) {
+      out += '  \u2717 API unreachable         api.skytale.sh\n';
+    }
+
+    // Relay health
+    try {
+      var t1 = performance.now();
+      await fetch('https://relay.skytale.sh/health', { mode: 'no-cors', cache: 'no-store' });
+      var ms2 = Math.round(performance.now() - t1);
+      out += '  \u2713 Relay reachable         relay.skytale.sh  ' + ms2 + 'ms\n';
+    } catch(e) {
+      out += '  \u2717 Relay unreachable       relay.skytale.sh\n';
+    }
+
+    // Auth
+    if (isAuthed()) {
+      out += '  \u2713 Authenticated           @' + getLogin() + '\n';
+    } else {
+      out += '  \u2717 Not authenticated       type: signup\n';
+    }
+
+    // Channels + agents (if authed)
+    if (isAuthed()) {
+      try {
+        var ch = await api('GET', '/v1/channels');
+        var chCount = ch.channels ? ch.channels.length : 0;
+        if (chCount > 0) {
+          out += '  \u2713 Channels                ' + chCount + ' active\n';
+        } else {
+          out += '  \u2717 No channels             type: channels create myorg/demo\n';
+        }
+      } catch(e) { out += '  ? Channels                could not fetch\n'; }
+
+      try {
+        var ag = await api('GET', '/v1/agents');
+        var agCount = ag.agents ? ag.agents.length : 0;
+        if (agCount > 0) {
+          out += '  \u2713 Agents                  ' + agCount + ' registered\n';
+        } else {
+          out += '  \u2500 No agents               agents auto-register via SDK\n';
+        }
+      } catch(e) { out += '  ? Agents                  could not fetch\n'; }
+
+      try {
+        var u = await api('GET', '/v1/usage');
+        out += '  \u2713 Plan                    ' + (u.plan_tier || 'free') + '\n';
+      } catch(e) {}
+    }
+
+    out += '\n  Run skytale doctor in your terminal for full diagnostics.';
+
+    showSandboxResult(out);
   }
 
   async function runCrypto(input) {
@@ -1086,7 +1916,7 @@
 
   // ── Command aliases ──
   const aliases = {
-    help: 'about', skytale: 'about', about: 'about',
+    skytale: 'about', about: 'about',
     protocols: 'about', protocol: 'about',
     install: 'install', integrations: 'install', int: 'install',
     code: 'code', demo: 'code', quickstart: 'code',
@@ -1094,10 +1924,12 @@
     compliance: 'security', comply: 'security',
     pricing: 'pricing', price: 'pricing', plans: 'pricing',
     sandbox: 'sandbox', try: 'sandbox', crypto: 'sandbox',
+    connect: 'connect', setup: 'connect', 'get started': 'connect', start: 'connect',
+    activity: 'activity', log: 'activity', logs: 'activity',
   };
 
   // ── Autocomplete ──
-  const allCmds = [...Object.keys(aliases), 'encrypt', 'decrypt', 'keygen', 'hash', 'signup', 'login', 'logout', 'create channel', 'create key', 'channels', 'keys', 'usage', 'billing', 'whoami', 'help'];
+  const allCmds = [...Object.keys(aliases), 'encrypt', 'decrypt', 'keygen', 'hash', 'signup', 'login', 'logout', 'create channel', 'create key', 'channels', 'channels create', 'channels view', 'channels invite', 'channel', 'keys', 'keys create', 'keys revoke', 'usage', 'connect', 'activity', 'activity --channel', 'activity --last', 'revoke key', 'whoami', 'account', 'help', '?', 'doctor', 'refresh', 'agents', 'agents list', 'revocations', 'webhooks', 'teams', 'audit', 'export usage', 'export audit', 'export compliance', 'billing', 'billing upgrade', 'billing portal', 'logs', 'logs --follow', 'follow', 'stop', 'unfollow', 'init'];
 
   promptInput.addEventListener('input', function() {
     const val = promptInput.value.trim().toLowerCase();
@@ -1110,7 +1942,361 @@
   promptInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       const inputVal = promptInput.value.trim();
-      const raw = inputVal.toLowerCase().replace(/^skytale\s*/, '');
+      let raw = inputVal.toLowerCase().replace(/^skytale\s*/, '');
+
+      // 0. Help command
+      if (raw === 'help' || raw === '?') {
+        var helpText = '  \u2500\u2500 Commands \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+        helpText += '  \u2500\u2500 Navigation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+        helpText += '  about              what is skytale\n';
+        helpText += '  pricing            plans and pricing\n';
+        helpText += '  connect / init     set up your project\n';
+        helpText += '  install            supported frameworks\n';
+        helpText += '  code               quickstart example\n';
+        helpText += '  security           risks and compliance\n';
+        helpText += '  doctor             run diagnostics\n';
+        helpText += '  refresh            reload current panel\n\n';
+        helpText += '  \u2500\u2500 Crypto Sandbox \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+        helpText += '  encrypt "msg"      MLS encrypt (real, in browser)\n';
+        helpText += '  decrypt            decrypt last message\n';
+        helpText += '  keygen             generate Ed25519 keypair\n';
+        helpText += '  hash "data"        SHA-256 hash\n\n';
+        helpText += '  \u2500\u2500 Auth \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+        helpText += '  signup / login     sign in with GitHub\n';
+        helpText += '  logout             sign out\n';
+        helpText += '  account / whoami   account info\n';
+
+        if (isAuthed()) {
+          helpText += '\n  \u2500\u2500 Channels \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  channels           list channels\n';
+          helpText += '  channels create <n> create channel\n';
+          helpText += '  channels view <n>  channel details\n';
+          helpText += '  channels invite <n> create invite\n\n';
+          helpText += '  \u2500\u2500 Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  keys               list API keys\n';
+          helpText += '  keys create <name> create new key\n';
+          helpText += '  keys revoke <id>   revoke a key\n\n';
+          helpText += '  \u2500\u2500 Activity & Usage \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  activity           recent agent activity\n';
+          helpText += '  usage              plan + usage stats\n';
+          helpText += '  agents             registered agents\n';
+          helpText += '  audit <channel>    audit log entries\n\n';
+          helpText += '  \u2500\u2500 Billing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  billing            plan status\n';
+          helpText += '  billing upgrade    open Stripe checkout\n';
+          helpText += '  billing portal     manage subscription\n\n';
+          helpText += '  \u2500\u2500 Export \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  export usage       download usage JSON\n';
+          helpText += '  export audit <ch>  download audit log\n';
+          helpText += '  export compliance  full compliance report\n\n';
+          helpText += '  \u2500\u2500 Other \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+          helpText += '  webhooks           list webhooks\n';
+          helpText += '  revocations        list revocations\n';
+          helpText += '  teams              list teams\n';
+        }
+
+        helpText += '\n  esc                return to previous panel';
+
+        showSandboxResult(helpText);
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
+
+      // 0b. Doctor command
+      if (raw === 'doctor') {
+        runDoctor();
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
+
+      // 0c. Refresh command
+      if (raw === 'refresh') {
+        if (currentPanel === 'channels') loadChannels();
+        else if (currentPanel === 'keys') loadKeys();
+        else if (currentPanel === 'activity') loadActivity();
+        else if (currentPanel === 'usage') loadUsage();
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
+
+      // 0d. Context-aware sub-commands
+      if (isAuthed() && currentPanel === 'channels') {
+        if (raw.startsWith('create ') && !raw.startsWith('create key') && !raw.startsWith('create channel')) raw = 'channels ' + raw;
+        if (raw.startsWith('view ')) raw = 'channels ' + raw;
+        if (raw.startsWith('invite ')) raw = 'channels ' + raw;
+      }
+      if (isAuthed() && currentPanel === 'keys') {
+        if (raw.startsWith('create ') && !raw.startsWith('create channel')) raw = 'keys ' + raw;
+        if (raw.startsWith('revoke ') && !raw.startsWith('revoke key')) raw = 'keys ' + raw;
+      }
+
+      // 0e. Live activity streaming commands
+      if (raw === 'logs --follow' || raw === 'logs -f' || raw === 'follow') {
+        activate('activity');
+        startLiveActivity();
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
+      if (raw === 'stop' || raw === 'unfollow') {
+        stopLiveActivity();
+        flashStatus('stopped live activity');
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
+
+      // 0f. Panel navigation commands
+      if (raw === 'channels' || raw === 'channels list') { activate('channels'); promptInput.value = ''; hint.textContent = ''; return; }
+      if (raw === 'keys' || raw === 'keys list') { activate('keys'); promptInput.value = ''; hint.textContent = ''; return; }
+      if (raw === 'activity' || raw === 'logs') { activate('activity'); promptInput.value = ''; hint.textContent = ''; return; }
+      if (raw === 'init') { activate('connect'); promptInput.value = ''; hint.textContent = ''; return; }
+
+      // 0g. Channels sub-commands
+      if (raw.startsWith('channels create ')) {
+        var chCreateName = raw.slice(16).trim();
+        if (isAuthed()) {
+          api('POST', '/v1/channels', {name: chCreateName}).then(function() {
+            flashStatus('\u2713 channel ' + chCreateName + ' created');
+            activate('channels');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        } else { flashStatus('authenticate first \u2014 type: signup'); }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      if (raw.startsWith('channels view ')) {
+        var chViewName = raw.slice(14).trim();
+        activate('channels');
+        showChannelDetail(chViewName);
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      if (raw.startsWith('channels invite ')) {
+        var chInvName = raw.slice(16).trim();
+        if (isAuthed()) {
+          api('POST', '/v1/channels/invites', {channel: chInvName}).then(function(data) {
+            flashStatus('\u2713 invite: ' + (data.token || 'created'));
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      if (raw.startsWith('keys create ')) {
+        var keyCreateName = raw.slice(12).trim();
+        if (isAuthed()) {
+          api('POST', '/v1/keys', {name: keyCreateName}).then(function(data) {
+            flashStatus('\u2713 key created: ' + (data.key || ''));
+            activate('keys');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      if (raw.startsWith('keys revoke ')) {
+        var keyRevokeId = raw.slice(12).trim();
+        if (isAuthed()) {
+          api('DELETE', '/v1/keys/' + keyRevokeId).then(function() {
+            flashStatus('\u2713 key revoked');
+            loadKeys();
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0h. Agents
+      if (raw === 'agents' || raw === 'agents list') {
+        if (isAuthed()) {
+          api('GET', '/v1/agents').then(function(data) {
+            var agents = data.agents || [];
+            if (agents.length === 0) {
+              showSandboxResult('  No agents registered.\n  Agents auto-register when they connect via the SDK.');
+            } else {
+              var agOut = '  \u2500\u2500 Agents \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+              agOut += '  DID                         NAME           STATUS\n';
+              agOut += '  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+              agents.forEach(function(a) {
+                agOut += '  ' + (a.did || '').slice(0, 28).padEnd(30) + (a.display_name || '').padEnd(15) + (a.status || '') + '\n';
+              });
+              showSandboxResult(agOut);
+            }
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        } else { flashStatus('authenticate first \u2014 type: signup'); }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0i. Webhooks
+      if (raw === 'webhooks' || raw === 'webhooks list') {
+        if (isAuthed()) {
+          api('GET', '/v1/webhooks').then(function(data) {
+            var wh = data.webhooks || data || [];
+            if (!Array.isArray(wh) || wh.length === 0) {
+              showSandboxResult('  No webhooks configured.\n\n  webhooks create <url> --events message,join');
+            } else {
+              var whOut = '  \u2500\u2500 Webhooks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+              wh.forEach(function(w) {
+                whOut += '  ' + (w.url || '').padEnd(40) + (w.events || []).join(', ') + '\n';
+              });
+              showSandboxResult(whOut);
+            }
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0j. Revocations
+      if (raw === 'revocations' || raw === 'revocations list') {
+        if (isAuthed()) {
+          api('GET', '/v1/revocations').then(function(data) {
+            var revs = data.revocations || data || [];
+            if (!Array.isArray(revs) || revs.length === 0) {
+              showSandboxResult('  No revocations issued.');
+            } else {
+              var revOut = '  \u2500\u2500 Revocations \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+              revs.forEach(function(r) {
+                revOut += '  ' + (r.revoked_did || '').slice(0, 30).padEnd(32) + (r.reason || '') + '\n';
+              });
+              showSandboxResult(revOut);
+            }
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0k. Teams
+      if (raw === 'teams' || raw === 'teams list') {
+        if (isAuthed()) {
+          api('GET', '/v1/teams').then(function(data) {
+            var teams = data.teams || data || [];
+            if (!Array.isArray(teams) || teams.length === 0) {
+              showSandboxResult('  No teams yet.');
+            } else {
+              var tmOut = '  \u2500\u2500 Teams \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+              teams.forEach(function(t) {
+                tmOut += '  ' + (t.name || '').padEnd(20) + (t.role || '') + '\n';
+              });
+              showSandboxResult(tmOut);
+            }
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0l. Audit
+      if (raw.startsWith('audit ')) {
+        var auditChannel = raw.slice(6).trim();
+        if (isAuthed()) {
+          api('GET', '/v1/audit/' + encodeURIComponent(auditChannel) + '/entries?limit=20').then(function(data) {
+            var entries = data.entries || [];
+            if (entries.length === 0) {
+              showSandboxResult('  No audit entries for ' + auditChannel);
+            } else {
+              var audOut = '  \u2500\u2500 Audit: ' + auditChannel + ' \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n';
+              audOut += '  EPOCH  SEQ  TIMESTAMP                SIZE\n';
+              audOut += '  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+              entries.forEach(function(ent) {
+                audOut += '  ' + String(ent.epoch || '').padEnd(7) + String(ent.sequence || '').padEnd(5) + (ent.created_at || '').slice(0, 19).padEnd(21) + (ent.encrypted_blob ? ent.encrypted_blob.length + 'B' : '') + '\n';
+              });
+              showSandboxResult(audOut);
+            }
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0m. Billing
+      if (raw === 'billing') {
+        if (isAuthed()) {
+          api('GET', '/v1/billing').then(function(data) {
+            flashStatus((data.plan || 'free') + ' | ' + (data.status || 'active'));
+          }).catch(function(e) { flashStatus('billing: ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+      if (raw === 'billing upgrade') {
+        if (isAuthed()) {
+          api('POST', '/v1/billing/checkout').then(function(data) {
+            if (data.checkout_url) window.open(data.checkout_url, '_blank');
+            flashStatus('Stripe checkout opened');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+      if (raw === 'billing portal') {
+        if (isAuthed()) {
+          api('POST', '/v1/billing/portal').then(function(data) {
+            if (data.portal_url) window.open(data.portal_url, '_blank');
+            flashStatus('Stripe portal opened');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0n. Export / compliance
+      if (raw === 'export usage') {
+        if (isAuthed()) {
+          api('GET', '/v1/usage').then(function(data) {
+            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'skytale-usage.json'; a.click();
+            URL.revokeObjectURL(url);
+            flashStatus('\u2713 usage exported');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+      if (raw.startsWith('export audit ')) {
+        var expAuditChan = raw.slice(13).trim();
+        if (isAuthed()) {
+          api('GET', '/v1/audit/' + encodeURIComponent(expAuditChan) + '/entries?limit=1000').then(function(data) {
+            var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'skytale-audit-' + expAuditChan.replace(/\//g, '-') + '.json'; a.click();
+            URL.revokeObjectURL(url);
+            flashStatus('\u2713 audit exported');
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+      if (raw === 'export compliance') {
+        if (isAuthed()) {
+          Promise.all([
+            api('GET', '/v1/usage').catch(function() { return {}; }),
+            api('GET', '/v1/agents').catch(function() { return {}; }),
+            api('GET', '/v1/channels').catch(function() { return {}; }),
+            api('GET', '/v1/activity?limit=100').catch(function() { return {}; })
+          ]).then(function(results) {
+            var report = { generated: new Date().toISOString(), usage: results[0], agents: results[1], channels: results[2], activity: results[3] };
+            var blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'skytale-compliance-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+            URL.revokeObjectURL(url);
+            flashStatus('\u2713 compliance report exported');
+          });
+        }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0o. Account/whoami
+      if (raw === 'account' || raw === 'whoami') {
+        if (isAuthed()) {
+          api('GET', '/v1/accounts/me').then(function(data) {
+            flashStatus('@' + (data.github_login || data.email || 'user') + ' \u00b7 ' + (data.plan_tier || 'free'));
+          }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        } else { flashStatus('not signed in \u2014 type: signup'); }
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
+
+      // 0p. CLI-only commands
+      if (['completions', 'token', 'open', 'share', 'import'].indexOf(raw.split(' ')[0]) !== -1) {
+        flashStatus('available in CLI: skytale ' + raw);
+        promptInput.value = ''; hint.textContent = ''; return;
+      }
 
       // 1. Crypto commands
       const isCrypto = /^(encrypt|decrypt|keygen|hash)\b/i.test(raw);
@@ -1122,7 +2308,7 @@
       }
 
       // 2. Auth commands
-      if (raw === 'signup' || raw === 'login' || raw === 'start') {
+      if (raw === 'signup' || raw === 'login' || (!isAuthed() && raw === 'start')) {
         promptInput.value = '';
         hint.textContent = '';
         startOAuth();
@@ -1140,7 +2326,7 @@
       }
 
       // 3. Auth-gated commands
-      const authGated = ['create channel', 'channels', 'keys', 'apikey', 'create key', 'usage', 'billing', 'upgrade', 'whoami'];
+      const authGated = ['create channel', 'channels', 'channel', 'keys', 'apikey', 'create key', 'revoke key', 'usage', 'activity', 'upgrade', 'whoami'];
       const isAuthGated = authGated.some(function(cmd) { return raw === cmd || raw.startsWith(cmd + ' '); });
       if (isAuthGated) {
         promptInput.value = '';
@@ -1164,6 +2350,44 @@
           return;
         }
         if (raw === 'channels') { activate('channels'); return; }
+
+        // channel <name> — show detail
+        if (raw.startsWith('channel ') && !raw.startsWith('channel create')) {
+          const chName = raw.slice(8).trim();
+          activate('channels');
+          showChannelDetail(chName);
+          return;
+        }
+
+        // revoke key <id>
+        if (raw.startsWith('revoke key ')) {
+          const keyId = raw.slice(11).trim();
+          (async function() {
+            try {
+              await api('DELETE', '/v1/keys/' + keyId);
+              showSandboxResult('  Key revoked: ' + keyId);
+              loadKeys();
+            } catch (err) { showSandboxResult('  Error: ' + err.message); }
+          })();
+          return;
+        }
+
+        // activity --channel <name>
+        if (raw.startsWith('activity --channel ')) {
+          const chFilter = raw.slice(19).trim();
+          activate('activity');
+          loadActivityFiltered('channel=' + encodeURIComponent(chFilter));
+          return;
+        }
+
+        // activity --last <duration>
+        if (raw.startsWith('activity --last ')) {
+          const duration = raw.slice(16).trim();
+          activate('activity');
+          loadActivityFiltered('last=' + encodeURIComponent(duration));
+          return;
+        }
+
         if (raw === 'keys') { activate('keys'); return; }
 
         // apikey / create key <name>
@@ -1180,7 +2404,8 @@
         }
 
         if (raw === 'usage') { activate('usage'); return; }
-        if (raw === 'billing') { activate('billing'); return; }
+        if (raw === 'activity') { activate('activity'); return; }
+        if (raw === 'connect') { activate('connect'); return; }
         if (raw === 'upgrade') {
           showSandboxResult('  Pro plan coming soon.\n\n  Free tier: 1M messages/mo, unlimited channels.');
           return;
@@ -1218,6 +2443,13 @@
       }
     }
     if (e.key === 'Escape') {
+      // If sandbox output is visible, return to previous panel
+      if (sandboxOut.style.display === 'block' || sandboxOut.classList.contains('active')) {
+        activate(previousPanel);
+        promptInput.value = '';
+        hint.textContent = '';
+        return;
+      }
       promptInput.blur();
       promptInput.value = '';
       hint.textContent = '';
@@ -1289,8 +2521,10 @@
 
   // ── Boot sequence ──
   async function bootSequence() {
-    if (localStorage.getItem('skytale_booted') && !isAuthed()) {
+    // Just returned from OAuth — let onAuthComplete handle the UI
+    if (oauthReturn) {
       revealUI();
+      await onAuthComplete();
       return;
     }
     if (isAuthed()) {
@@ -1301,7 +2535,7 @@
 
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mq.matches) {
-      localStorage.setItem('skytale_booted', '1');
+      sessionStorage.setItem('skytale_booted_session', '1');
       revealUI();
       return;
     }
@@ -1357,18 +2591,20 @@
 
   function finishBoot(out) {
     out.style.display = 'none';
-    localStorage.setItem('skytale_booted', '1');
+    sessionStorage.setItem('skytale_booted_session', '1');
     revealUI();
   }
 
-  function revealUI() {
+  async function revealUI() {
+    if (isAuthed()) await checkUserState();
     renderSidebar();
     updateStatusBar();
-    const defaultPanel = isAuthed() ? 'channels' : 'about';
+    const defaultPanel = isAuthed() ? (userHasChannels ? 'activity' : 'connect') : 'about';
     activate(defaultPanel);
     document.getElementById('sidebar').classList.add('boot-ready');
     document.getElementById('prompt-bar').classList.add('boot-ready');
     setTimeout(function() { promptInput.focus(); }, 100);
+    updatePromptHint();
   }
 
   async function showWelcomeBack() {
@@ -1377,10 +2613,11 @@
       const msgs = usage.messages_this_month || 0;
       const chans = usage.channel_count || 0;
       showSandboxResult('  Welcome back, @' + getLogin() + '\n  ' + chans + ' channels \u00b7 ' + msgs.toLocaleString() + ' messages this month\n\n  Type help for commands.');
-      activate('channels');
+      activate(userHasChannels ? 'activity' : 'connect');
     } catch {
-      activate('channels');
+      activate(userHasChannels ? 'activity' : 'connect');
     }
+    updatePromptHint();
   }
 
   // ── Typing animation (top bar, first visit) ──
@@ -1455,7 +2692,7 @@
         lat.textContent = ms + 'ms';
         renderSpark();
         dot.style.color = '#7dd3a0';
-        statusText.textContent = 'relay online';
+        if (!statusFlashing) statusText.textContent = 'relay online';
       } catch {
         history.push(-1);
         if (history.length > MAX) history.shift();
@@ -1463,13 +2700,114 @@
         lat.textContent = 'timeout';
         renderSpark();
         dot.style.color = '#f87171';
-        statusText.textContent = 'relay offline';
+        if (!statusFlashing) statusText.textContent = 'relay offline';
       }
     }
 
     ping();
     setInterval(ping, 8000);
   })();
+
+  // ── Global copy handlers ──
+  document.addEventListener('click', function(e) {
+    // [COPY] button
+    if (e.target.classList.contains('copy')) {
+      var text = e.target.dataset.text || (e.target.previousElementSibling ? e.target.previousElementSibling.textContent.trim() : '');
+      if (text) {
+        navigator.clipboard.writeText(text);
+        var orig = e.target.textContent;
+        e.target.textContent = '[COPIED]';
+        setTimeout(function() { e.target.textContent = orig; }, 1500);
+      }
+    }
+
+    // [COPY CODE] — copies the entire pre block
+    if (e.target.classList.contains('copy-all')) {
+      var pre = e.target.closest('pre');
+      if (pre) {
+        var code = pre.textContent.replace('[COPY CODE]', '').trim();
+        navigator.clipboard.writeText(code);
+        e.target.textContent = '[COPIED]';
+        setTimeout(function() { e.target.textContent = '[COPY CODE]'; }, 1500);
+      }
+    }
+
+    // Clickable actions
+    if (e.target.classList.contains('action')) {
+      var cmd = e.target.dataset.cmd;
+      if (!cmd) return;
+
+      // Live activity streaming
+      if (cmd === 'logs --follow') { startLiveActivity(); return; }
+      if (cmd === 'stop') { stopLiveActivity(); loadActivity(); return; }
+
+      // Activity pagination
+      if (cmd === 'activity-next') { activityOffset += ACTIVITY_LIMIT; loadActivity(); return; }
+      if (cmd === 'activity-prev') { activityOffset = Math.max(0, activityOffset - ACTIVITY_LIMIT); loadActivity(); return; }
+      if (cmd === 'activity-refresh') { activityOffset = 0; loadActivity(); return; }
+
+      // Channels refresh
+      if (cmd === 'channels-refresh') { loadChannels(); return; }
+
+      // Channel detail
+      if (cmd.startsWith('channel ')) {
+        var chName = cmd.slice(8);
+        activate('channels');
+        showChannelDetail(chName);
+        return;
+      }
+
+      // Keys create
+      if (cmd === 'keys-create') {
+        promptInput.value = 'create key ';
+        promptInput.focus();
+        return;
+      }
+
+      // Key revoke
+      if (cmd.startsWith('revoke-key ')) {
+        var keyId = cmd.slice(11);
+        (async function() {
+          try {
+            await api('DELETE', '/v1/keys/' + keyId);
+            showSandboxResult('  Key revoked: ' + keyId);
+            loadKeys();
+          } catch (err) { showSandboxResult('  Error: ' + err.message); }
+        })();
+        return;
+      }
+
+      // Stripe billing
+      if (cmd === 'stripe-checkout') { openStripeCheckout(); return; }
+      if (cmd === 'stripe-portal') { openStripePortal(); return; }
+
+      // Export usage from usage panel
+      if (cmd === 'export-usage') {
+        api('GET', '/v1/usage').then(function(data) {
+          var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = 'skytale-usage.json'; a.click();
+          URL.revokeObjectURL(url);
+          flashStatus('\u2713 usage exported');
+        }).catch(function(e) { flashStatus('\u2717 ' + e.message); });
+        return;
+      }
+
+      // Default: treat as panel alias
+      var panel = aliases[cmd] || cmd;
+      activate(panel);
+    }
+  });
+
+  // ── Framework tab switcher ──
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('connect-tab')) {
+      var fw = e.target.dataset.fw;
+      document.querySelectorAll('.connect-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.fw === fw); });
+      document.querySelectorAll('.connect-code').forEach(function(c) { c.style.display = c.id === 'fw-' + fw ? 'block' : 'none'; });
+    }
+  });
 
   // ── Init ──
   bootSequence();
